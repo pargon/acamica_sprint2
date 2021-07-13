@@ -15,7 +15,6 @@ const cliente = new schema({
 });
 
 mon.model('cliente', cliente);
-mon.model('cliente', cliente);
 const climodel = mon.model('cliente');
 
 
