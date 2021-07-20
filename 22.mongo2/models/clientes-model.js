@@ -1,4 +1,4 @@
-const mon = require('./connect');
+const mon = require('../services/connect');
 
 const schema = mon.Schema;
 
