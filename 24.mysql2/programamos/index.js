@@ -25,6 +25,52 @@ async function findSongByArtist(nombre) {
     });
 }
 
+async function findSongById(id) {
+
+    return await sequelize.query(`
+        select 
+            a.nombre as album,
+            b.nombre as banda,
+            c.nombre as cancion
+        from cancion c
+        left join album a on a.id = c.album_id
+        left join bandamusical b on b.id = c.banda_id    
+        where c.id = ${id};`, 
+    {
+        type: sequelize.QueryTypes.SELECT 
+    });
+}
+
+async function findBandById(id) {
+
+    return await sequelize.query(`
+        select 
+            b.nombre as banda,
+            p.nombre as pais
+        from bandamusical b
+        left join pais p on p.id = b.pais_id
+        where b.id = ${id};`, 
+    {
+        type: sequelize.QueryTypes.SELECT 
+    });
+}
+
+async function findAlbumById(id) {
+
+    return await sequelize.query(`
+    select 
+        a.nombre as album,
+        b.nombre as banda
+    from album a
+    left join bandamusical b on b.id = a.banda_id    
+    where a.id = ${id};`, 
+    {
+        type: sequelize.QueryTypes.SELECT 
+    });
+}
+
+
+
 async function createSong(nombre,duracion,banda_id,album_id,fechaPublicacion){
 
     return await sequelize.query(
@@ -75,6 +121,25 @@ app.get('/canciones', async (req, resp) =>{
     const nombre = req.query.nombre;
     resp.json( await findSongByArtist( nombre ));
 } );
+
+app.get('/canciones/:id', async (req, resp) =>{
+
+    const id = req.params.id;
+    resp.json( await findSongById( id ));
+} );
+
+app.get('/bandas/:id', async (req, resp) =>{
+
+    const id = req.params.id;
+    resp.json( await findBandById( id ));
+} );
+
+app.get('/albums/:id', async (req, resp) =>{
+
+    const id = req.params.id;
+    resp.json( await findAlbumById( id ));
+} );
+
 
 app.post('/canciones', async (req, resp) =>{
 
