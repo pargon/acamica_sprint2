@@ -1,5 +1,4 @@
-const UserModel = require('../models/usuario');
-const sequelize = require('../services/connect');
+const UserModel = require('../models/userModel');
 
 const getAllUsers = async () => {
   return await UserModel.findAll(); 

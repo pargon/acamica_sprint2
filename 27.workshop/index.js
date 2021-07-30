@@ -1,16 +1,16 @@
 // Instancia de depndencias
 const express = require('express');
-const users = require('./routes/users');
-const products = require('./routes/products');
-const paymentsmeth = require('./routes/paymeth');
-const orders = require('./routes/orders');
+const users = require('./src/routes/usersRoute');
+const products = require('./src/routes/productsRoute');
+const paymentsmeth = require('./src/routes/paymethRoute');
+const orders = require('./src/routes/ordersRoute');
 
+require('dotenv').config();
 
-const PORT = 5050;
 
 // configuración del server
 const server = express();
-server.listen(PORT, () => console.log(`Listen on ${PORT} port`));
+server.listen(process.env.EXPRESS_PORT, () => console.log(`Listen on ${process.env.EXPRESS_PORT} port`));
 server.use(express.json());
 
 // endpoints

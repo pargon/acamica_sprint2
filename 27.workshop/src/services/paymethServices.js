@@ -1,5 +1,4 @@
-
-const PayMethModel = require('../models/mediopago');
+const PayMethModel = require('../models/paymethModel');
 
 const getAllPayMeth = async () => {
   return await PayMethModel.findAll(); 

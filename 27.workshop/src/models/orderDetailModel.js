@@ -1,6 +1,9 @@
-const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('pedidoproducto', {
+const { DataTypes, Model } = require('sequelize');
+const sequelize = require('../services/connect');
+
+class OrderDetailModel extends Model { }
+
+OrderDetailModel.init({
     numeropedido: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -41,5 +44,6 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
     ]
-  });
-};
+  })
+
+  module.exports = OrderDetailModel;
