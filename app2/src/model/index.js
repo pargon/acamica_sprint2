@@ -3,6 +3,7 @@ const { createUserModel } = require('./models/userModel');
 const { createProductModel } = require('./models/productModel');
 const { createPaymethModel} = require('./models/paymethModel');
 const { createOrderModel } = require('./models/orderModel');
+const { createOrderDetailModel } = require('./models/orderDetailModel');
 
 const models ={};
 
@@ -20,8 +21,9 @@ async function connect(host, port, username, password, database){
     models.UserModel = createUserModel(conn);
     models.ProductModel = createProductModel(conn);
     models.PayMethModel = createPaymethModel(conn);
-    models.Order = createOrderModel(conn);
-    
+    models.OrderModel = createOrderModel(conn);
+    models.OrderDetail = createOrderDetailModel(conn);
+
     try{
         await conn.authenticate();
         await conn.sync();

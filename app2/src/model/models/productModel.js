@@ -34,5 +34,6 @@ ProductModel.init({
   });
 
 module.exports ={
-  createProductModel
+  createProductModel,
+  ProductModel
 };

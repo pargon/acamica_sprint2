@@ -1,7 +1,7 @@
 const { DataTypes, Model } = require('sequelize');
 const {UserModel} = require('../models/userModel');
 const {PayMethModel} = require('../models/paymethModel');
-const {OrderDetailModel} = require('../models/orderDetailModel');
+const {ProductModel} = require('../models/productModel');
 
 class OrderModel extends Model { }
 
@@ -72,9 +72,9 @@ OrderModel.init({
 
   OrderModel.belongsTo( UserModel, {foreignKey: {name: 'userid'}});
   OrderModel.belongsTo( PayMethModel, {foreignKey: 'codmediopago'});
-  OrderModel.belongsTo( OrderDetailModel, {foreignKey: 'numero'});
-  return OrderModel;
+  OrderModel.belongsToMany( ProductModel, {through: 'pedidoproducto', foreignKey: 'numeropedido'});
 
+  return OrderModel;
 }
 
 module.exports = {
