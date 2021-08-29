@@ -15,7 +15,8 @@ async function connect(host, port, username, password, database){
         password,
         host,
         port,
-        dialect: 'mariadb',        
+        dialect: 'mariadb',
+        timestamps: false        
     });
 
     models.UserModel = createUserModel(conn);
@@ -35,13 +36,14 @@ async function connect(host, port, username, password, database){
 
 function getModel(name){
     if (!models[name]){
-        global.console.log('No existe model');
+        global.console.log(`No existe model ${name}`);
         return null;
     }
     return models[name];
 }
 
+
 module.exports = {
     connect,
-    getModel
+    getModel,
 };

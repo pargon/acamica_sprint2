@@ -2,8 +2,9 @@ const { DataTypes, Model } = require('sequelize');
 
 class ProductModel extends Model { }
 
-const createProductModel = ( sequelize) =>
-ProductModel.init({
+const createProductModel = ( sequelize) =>{
+
+  ProductModel.init({
     codproducto: {
       type: DataTypes.STRING(40),
       allowNull: false,
@@ -33,6 +34,8 @@ ProductModel.init({
     ]
   });
 
+  return ProductModel;
+}
 module.exports ={
   createProductModel,
   ProductModel
