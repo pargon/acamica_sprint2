@@ -1,8 +1,9 @@
+const chalk = require("chalk");
 const { getModel } = require("../model");
 
 
 async function initialize() {
-
+  
   createUser();
   createPayMeth();
   createProduct();
@@ -18,7 +19,7 @@ async function createUser(){
     }
   });
   if (!current) {
-    User.create({
+    await User.create({
       userid: 'admin',
       nombre: 'gonzalo',
       apellido: 'parra',
@@ -31,17 +32,14 @@ async function createUser(){
 }
 
 async function createPayMeth(){
-  
-  const PayMeth = getModel('PayMethModel');
-  
+  const PayMeth = getModel('PayMethModel');    
   const current = await PayMeth.findOne({
     where:{
-      codmediopago: 'CASH'
+      descripcion: 'Efectivo'
     }
   });
   if (!current) {
-    PayMeth.create({
-      codmediopago: 'CASH',
+    await PayMeth.create({
       descripcion: 'Efectivo'
     });
   }
@@ -50,42 +48,38 @@ async function createPayMeth(){
 async function createProduct(){
   
   const Product = getModel('ProductModel');
+
   const current = await Product.findOne({
     where: {
-      codproducto: 'COCA'
+      descripcion: 'Coca Cola'
     }
   });
   if (!current) {
     await Product.create({
-      codproducto: 'COCA',
       descripcion: 'Coca Cola',
       precio: 180
     });
   }
 
-  const Product2 = getModel('ProductModel');
-  const current2 = await Product2.findOne({
+  const current2 = await Product.findOne({
     where: {
-    codproducto: 'PEPSI'
+      descripcion: 'Pepsi Cola'
     }
   });
   if (!current2) {
-    await Product2.create({
-      codproducto: 'PEPSI',
+    await Product.create({
       descripcion: 'Pepsi Cola',
       precio: 170
     });
   }  
 
-  const Product3 = getModel('ProductModel');
-  const current3 = await Product3.findOne({
+  const current3 = await Product.findOne({
     where: {
-      codproducto: 'HAMBUR'
+      descripcion: 'Hamburguesa'
     }
   });
   if (!current3) {
-    await Product3.create({
-      codproducto: 'HAMBUR',
+    await Product.create({
       descripcion: 'Hamburguesa',
       precio: 320
     });
@@ -93,21 +87,70 @@ async function createProduct(){
 }
 
 async function createOrder(){
-  
   const Order = getModel('OrderModel');
-  
-  const current = await Order.findOne({
-    where: {    numero: 1003}
+  const Product = getModel('ProductModel');
+  const User = getModel('UserModel');  
+  const PayMeth = getModel('PayMethModel');    
+
+  const num = 1002;
+
+  let current = await Order.findOne({
+    where: {
+      numero: num
+    }
   });
 
   if (!current) {
-    Order.create({
-      numero: 1003,
-      fecha: '20210825',
-      userid: 'admin',
-      codmediopago: 'CASH',
-      Detail:[{codproducto:'COCA', cantidad:1}]
+    await Order.create({
+      numero: num,
+      fecha: '20210826',
+      estado: 'Pendiente',      
+      direccion_entrega:  'nada',
+      paymethDescripcion: 'Efectivo',
+      userUserid: 'admin'
       });
+
+    current = await Order.findOne({
+      where: {
+        numero: num
+      }
+    });
+    const prdcurrent = await Product.findOne({
+      where: {
+        descripcion: 'Hamburguesa'
+      }
+    });
+    if (prdcurrent){
+      await current.addProduct(prdcurrent, {through: {cantidad:3}});
+    }else{
+      console.log(chalk.redBright('no existe prd'));
+    }
+
+    // asocia usuario
+    // const userCurrent = await User.findOne({
+    //   where:{
+    //     userid: 'admin'
+    //   }
+    // });
+    // if (userCurrent){
+    //   await current.setUser(userCurrent);
+    // }else{
+    //   console.log(chalk.redBright('no existe user'));
+    // }
+
+    // // asocia pay curr
+    // const payCurrent = await PayMeth.findOne({
+    //   where: {
+    //     descripcion: 'Efectivo'
+    //   }
+    // });
+    // if (payCurrent){
+    //   console.log(chalk.red(current));
+    //   console.log(chalk.red(payCurrent));
+    //   await current.setPayMeth(payCurrent);
+    // }else{
+    //   console.log(chalk.redBright('no existe met.pago'));
+    // }
   }
 }
 

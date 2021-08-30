@@ -1,9 +1,7 @@
 const Sequelize = require('sequelize');
-const { createUserModel } = require('./models/userModel');
-const { createProductModel } = require('./models/productModel');
-const { createPaymethModel} = require('./models/paymethModel');
-const { createOrderModel } = require('./models/orderModel');
-const { createOrderDetailModel } = require('./models/orderDetailModel');
+const { createModel } = require('./models');
+
+const chalk = require('chalk');
 
 const models ={};
 
@@ -19,29 +17,28 @@ async function connect(host, port, username, password, database){
         timestamps: false        
     });
 
-    models.UserModel = createUserModel(conn);
-    models.ProductModel = createProductModel(conn);
-    models.PayMethModel = createPaymethModel(conn);
-    models.OrderModel = createOrderModel(conn);
-    models.OrderDetail = createOrderDetailModel(conn);
-
+    const modelList = createModel(conn);    
+    models.UserModel = modelList.User;
+    models.ProductModel = modelList.Product;
+    models.PayMethModel = modelList.PayMeth;
+    models.OrderModel = modelList.Order;
+    
     try{
         await conn.authenticate();
         await conn.sync();
-        console.log('DB: Connect Success');
+        console.log(chalk.cyan('DB: Connect Success'));
     }catch(err){
-        console.log('DB: Error connect', err);
+        console.log(chalk.cyan('DB: Error connect', err));
     }
 }
 
 function getModel(name){
     if (!models[name]){
-        global.console.log(`No existe model ${name}`);
+        console.log(chalk.magenta( `No existe model ${name}`));
         return null;
     }
     return models[name];
 }
-
 
 module.exports = {
     connect,

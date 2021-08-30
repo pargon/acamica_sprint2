@@ -1,32 +1,35 @@
+const chalk = require('chalk');
 const { Router } = require('express');
 const { getModel } = require('../../model');
 
 function createRouter() {
+
   const router = Router();
 
-    /**
-   * @swagger
-   * /usuario:
-   *  post:
-   *    summary: Crear usuario
-   *    description: Permite crear una cuenta de usuario.
-   *    consumes:
-   *    - "application/json"
-   *    parameters:
-   *    - name: body
-   *      description: Cuerpo de una persona.
-   *      in: body
-   *      required: true
-   *      type: string
-   *      example: {nombre: String, apellido: String, mail: String, direccionenvio: String, telefono: String, userid: String, password: String}
-   *    produces:
-   *    - "application/json"
-   *    responses:
-   *      200:
-   *        description: Usuario Creado
-   */
+  /**
+ * @swagger
+ * /user:
+ *  post:
+ *    summary: Crear usuario
+ *    description: Permite crear una cuenta de usuario.
+ *    consumes:
+ *    - "application/json"
+ *    parameters:
+ *    - name: body
+ *      description: Cuerpo de una persona.
+ *      in: body
+ *      required: true
+ *      type: string
+ *      example: {nombre: String, apellido: String, mail: String, direccionenvio: String, telefono: String, userid: String, password: String}
+ *    produces:
+ *    - "application/json"
+ *    responses:
+ *      200:
+ *        description: Usuario Creado
+ */
   router.post('/', /*chk.validaNuevoUsuario, */ async (req, res) => {
-    res.status(200).json({mensaje:"Usuario Creado"});
+  console.log(chalk.yellow('uhhh'));
+  res.status(200).json({mensaje:"Usuario Creado"});
 
   });
   /**
@@ -69,17 +72,17 @@ function createRouter() {
     console.timeEnd('GET Users');
     res.json(users);
   });
-
-/*  router.post('/', cleanCache, async (req, res) => {
-    const article = req.body;
-    const Post = getModel('Post');
-    await Post.create(article);
-    res.json(article);
-  });
-*/
+  
+  /*  router.post('/', cleanCache, async (req, res) => {
+      const article = req.body;
+      const Post = getModel('Post');
+      await Post.create(article);
+      res.json(article);
+    });
+  */
   return router;
 }
 
 module.exports = {
-  createRouter,
+  createRouter
 };

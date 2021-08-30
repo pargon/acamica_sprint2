@@ -1,13 +1,12 @@
 const { Router } = require('express');
 const { getModel } = require('../../model');
-const { ProductModel } = require('../../model/models/productModel');
 
 function createRouter() {
   const router = Router();
 
   /**
    * @swagger
-   * /:
+   * /orders:
    *  post:
    *    summary: Nuevo Pedido
    *    description: Permite crear un pedido a un usuario.
@@ -37,7 +36,7 @@ function createRouter() {
   });
   /**
    * @swagger
-   * /:
+   * /orders:
    *  put:
    *    summary: Actualiza Pedido
    *    description: Permite editar un pedido a un usuario.
@@ -72,7 +71,7 @@ function createRouter() {
   });
   /**
    * @swagger
-   * /mis:
+   * /orders:
    *  get:
    *    summary: Lista pedidos del usuario
    *    description: Obtener un listado de pedidos del usuario.
@@ -91,13 +90,13 @@ function createRouter() {
    *        description: Usuario no encontrado
    *
    */
-  router.get('/mis', /*chk.validaSesion, */ async (req, res) => {
+  router.get('/', /*chk.validaSesion, */ async (req, res) => {
     const listado = {};
     res.status(200).json(listado);
   });
   /**
    * @swagger
-   * /todos:
+   * /orders/all:
    *  get:
    *    summary: Todos los pedidos
    *    description: Obtener un listado con todos los pedidos (sólo usuario Admin puede invocar).
@@ -118,13 +117,21 @@ function createRouter() {
    *        description: Usuario no existe
    *
    */
-  router.get('/todos', /*chk.validaSesion, chk.validaUsuarioAdmin, */ async (req, res) => {
-    const listado = {};
-    res.status(200).json(listado);
+  router.get('/all', /*chk.validaSesion, chk.validaUsuarioAdmin, */ async (req, res) => {
+    const Order = getModel('OrderModel');
+    console.time('GET Orders');
+    const User = getModel('UserModel');
+    const Product = getModel('ProductModel');
+    const PayMeth = getModel('PayMethModel');
+
+    const orders = await Order.findAll({ include: [Product, User, PayMeth]  });
+    console.timeEnd('GET Orders');
+    res.json(orders);
+    res.status(200).json(orders);
   });
   /**
    * @swagger
-   * /pedido/estado:
+   * /orders/status:
    *  put:
    *    summary: Actualiza estado del pedido
    *    description: Permite cambiar estado de un pedido (sólo usuario Admin).
@@ -150,7 +157,7 @@ function createRouter() {
    *      404:
    *        description: Pedido no encontrado
    */
-  router.put('/estado', /*chk.validaSesion, chk.validaUsuarioAdmin, chk.validaModificaPedido, */ async(req, res) => {
+  router.put('/status', /*chk.validaSesion, chk.validaUsuarioAdmin, chk.validaModificaPedido, */ async(req, res) => {
     res.status(200).json({mensaje:"Pedido actualizado"});
   });
 

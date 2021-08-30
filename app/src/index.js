@@ -24,14 +24,15 @@ async function main(){
       MYSQL_PORT,
       MYSQL_HOST
   } = process.env;
-      
+  
+  
   //console.log(chalk.green(MYSQL_HOST));
   
   // express
   const server = express();
   server.use(express.json());
   server.use(express.urlencoded({ extended: false}));
-  server.listen(PORT, ()=> console.log(`Server running ${PORT}`));
+  server.listen(PORT, ()=> console.log(chalk.cyan(`Server running ${PORT}`)));
   
   //Swagger
   const controllersFolder = path.join(__dirname, './controllers/routers/*.js');
@@ -57,7 +58,6 @@ async function main(){
   // database 
   await connect(MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASS, MYSQL_DATABASE);
   initialize();
-
 }
 
 main();
