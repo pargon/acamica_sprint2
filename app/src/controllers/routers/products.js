@@ -1,12 +1,11 @@
 const { Router } = require('express');
-const { getModel } = require('../../model');
 
 function createRouter() {
   const router = Router();
 
   /**
    * @swagger
-   * /:
+   * /products:
    *  post:
    *    summary: Crear producto
    *    description: Permite crear un producto (sólo usuario Admin).
@@ -37,7 +36,7 @@ function createRouter() {
   });
   /**
    * @swagger
-   * /:
+   * /products:
    *  put:
    *    summary: Actualizar producto
    *    description: Permite editar un producto (sólo usuario Admin).
@@ -68,7 +67,7 @@ function createRouter() {
   });
   /**
    * @swagger
-   * /:
+   * /products:
    *  delete:
    *    summary: Elimina producto
    *    description: Permite eliminar un producto (sólo usuario Admin).
@@ -99,7 +98,7 @@ function createRouter() {
   });
   /**
    * @swagger
-   * /todos:
+   * /products/all:
    *  get:
    *    summary: Lista todos los productos
    *    description: Obtener un listado de todos los productos (sólo usuario Admin puede invocar).

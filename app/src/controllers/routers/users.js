@@ -8,7 +8,7 @@ function createRouter() {
 
   /**
  * @swagger
- * /user:
+ * /users:
  *  post:
  *    summary: Crear usuario
  *    description: Permite crear una cuenta de usuario.
@@ -28,8 +28,8 @@ function createRouter() {
  *        description: Usuario Creado
  */
   router.post('/', /*chk.validaNuevoUsuario, */ async (req, res) => {
-  console.log(chalk.yellow('uhhh'));
-  res.status(200).json({mensaje:"Usuario Creado"});
+    console.log(chalk.yellow('uhhh'));
+    res.status(200).json({ mensaje: "Usuario Creado" });
 
   });
   /**
@@ -60,7 +60,7 @@ function createRouter() {
   router.post('/login', async (req, res) => {
 
     const loginId = 1;
-    res.status(200).json({id:loginId});
+    res.status(200).json({ id: loginId });
 
   });
 
@@ -72,7 +72,7 @@ function createRouter() {
     console.timeEnd('GET Users');
     res.json(users);
   });
-  
+
   /*  router.post('/', cleanCache, async (req, res) => {
       const article = req.body;
       const Post = getModel('Post');

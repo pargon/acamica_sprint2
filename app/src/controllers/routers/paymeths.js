@@ -1,12 +1,11 @@
 const { Router } = require('express');
-const { getModel } = require('../../model');
 
 function createRouter() {
   const router = Router();
 
   /**
    * @swagger
-   * /:
+   * /paymeths:
    *  post:
    *    summary: Crear medio de pago
    *    description: Permite crear un medio de pago (sólo usuario Admin).
@@ -37,7 +36,7 @@ function createRouter() {
    });
   /**
    * @swagger
-   * /:
+   * /paymeths:
    *  put:
    *    summary: Actualiza pedido
    *    description: Permite editar un medio de pago (sólo usuario Admin).
@@ -68,7 +67,7 @@ function createRouter() {
   });
   /**
    * @swagger
-   * /:
+   * /paymeths:
    *  delete:
    *    summary: Elimina medio de pago
    *    description: Permite eliminar un medio de pago (sólo usuario Admin).
@@ -99,7 +98,7 @@ function createRouter() {
   });
   /**
    * @swagger
-   * /todos:
+   * /paymeths/all:
    *  get:
    *    summary: Lista medios de pago
    *    description: Obtener un listado con todos los medios de pago (sólo usuario Admin puede invocar).
