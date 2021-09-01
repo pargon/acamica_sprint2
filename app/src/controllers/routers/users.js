@@ -1,9 +1,8 @@
-const chalk = require('chalk');
 const { Router } = require('express');
-const { getModel } = require('../../model');
+const db = require('../../model');
+const { chkNewUser } = require('../midds');
 
 function createRouter() {
-
   const router = Router();
 
   /**
@@ -20,17 +19,36 @@ function createRouter() {
  *      in: body
  *      required: true
  *      type: string
- *      example: {nombre: String, apellido: String, mail: String, direccionenvio: String, telefono: String, userid: String, password: String}
+ *      example: { nombre: String, apellido: String, mail: String, direccionenvio: String, telefono: String, userid: String, password: String}
  *    produces:
  *    - "application/json"
  *    responses:
  *      200:
  *        description: Usuario Creado
  */
-  router.post('/', /*chk.validaNuevoUsuario, */ async (req, res) => {
-    console.log(chalk.yellow('uhhh'));
-    res.status(200).json({ mensaje: "Usuario Creado" });
+  router.post('/', chkNewUser, async (req, res) => {
+    const User = db.getModel('UserModel');
+    const {
+      userid,
+      nombre,
+      apellido,
+      mail,
+      direenvio,
+      telefono,
+      password,
+    } = req.body;
 
+    await User.create({
+      userid,
+      nombre,
+      apellido,
+      mail,
+      direenvio,
+      telefono,
+      password,
+      admin: false,
+    });
+    res.status(200).json({ mensaje: 'Usuario Creado' });
   });
   /**
    * @swagger
@@ -55,27 +73,24 @@ function createRouter() {
    *      401:
    *        description: Password incorrecto
    *      404:
-   *        description: Usuario no encontrado 
+   *        description: Usuario no encontrado
    */
   router.post('/login', async (req, res) => {
-
     const loginId = 1;
     res.status(200).json({ id: loginId });
-
   });
 
-  router.get('/', /*cache,*/ async (req, res) => {
-    const User = getModel('UserModel');
-    console.log('entro user');
-    console.time('GET Users');
+  router.get('/', /* cache, */ async (req, res) => {
+    const User = db.getModel('UserModel');
+    global.console.time('GET Users');
     const users = await User.findAll({});
-    console.timeEnd('GET Users');
+    global.console.timeEnd('GET Users');
     res.json(users);
   });
 
   /*  router.post('/', cleanCache, async (req, res) => {
       const article = req.body;
-      const Post = getModel('Post');
+      const Post = db.getModel('Post');
       await Post.create(article);
       res.json(article);
     });
@@ -84,5 +99,5 @@ function createRouter() {
 }
 
 module.exports = {
-  createRouter
+  createRouter,
 };

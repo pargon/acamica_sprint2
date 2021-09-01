@@ -1,4 +1,3 @@
-const express = require('express');
 const chalk = require('chalk');
 const { config } = require('dotenv');
 const swaggerJsDoc = require('swagger-jsdoc');
@@ -6,15 +5,11 @@ const swaggerUI = require('swagger-ui-express');
 const path = require('path');
 const { initialize } = require('./config/db');
 const { connect } = require('./model');
-const { createRouter: createUserRouter } = require('./controllers/routers/users');
-const { createRouter: createProductRouter } = require('./controllers/routers/products');
-const { createRouter: createPayMethRouter } = require('./controllers/routers/paymeths');
-const { createRouter: createOrderRouter } = require('./controllers/routers/orders');
+const { makeServer } = require('./server');
 
 async function main() {
   // variables entorno
   config();
-  const PORT = process.env.EXPRESS_PORT || 4040;
   const {
     MYSQL_USER,
     MYSQL_PASS,
@@ -26,10 +21,11 @@ async function main() {
   // console.log(chalk.green(MYSQL_HOST));
 
   // express
-  const server = express();
-  server.use(express.json());
-  server.use(express.urlencoded({ extended: false }));
-  server.listen(PORT, () => console.log(chalk.cyan(`Server running ${PORT}`)));
+  const PORT = process.env.EXPRESS_PORT || 4040;
+  const server = makeServer();
+  server.listen(PORT, () => global.console.log(chalk.cyan(`Server running ${PORT}`)));
+  server.set('views', './views');
+  server.set('view engine', 'pug');
 
   // Swagger
   const controllersFolder = path.join(__dirname, './controllers/routers/*.js');
@@ -46,11 +42,6 @@ async function main() {
   const swaggerDocs = swaggerJsDoc(swaggerOptions);
   server.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs));
 
-  // endpoints
-  server.use('/api/v1/users', createUserRouter());
-  server.use('/api/v1/products', createProductRouter());
-  server.use('/api/v1/paymeths', createPayMethRouter());
-  server.use('/api/v1/orders', createOrderRouter());
 
   // database
   await connect(MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASS, MYSQL_DATABASE);

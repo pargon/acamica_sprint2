@@ -1,22 +1,20 @@
-const chalk = require("chalk");
-const { getModel } = require("../model");
-
+/* eslint-disable no-use-before-define */
+const chalk = require('chalk');
+const { getModel } = require('../model');
 
 async function initialize() {
-  
   createUser();
   createPayMeth();
   createProduct();
-  createOrder();  
+  createOrder();
 }
 
-async function createUser(){
-  
-  const User = getModel('UserModel');  
+async function createUser() {
+  const User = getModel('UserModel');
   const current = await User.findOne({
     where: {
-      userid: 'admin'
-    }
+      userid: 'admin',
+    },
   });
   if (!current) {
     await User.create({
@@ -31,98 +29,97 @@ async function createUser(){
   }
 }
 
-async function createPayMeth(){
-  const PayMeth = getModel('PayMethModel');    
+async function createPayMeth() {
+  const PayMeth = getModel('PayMethModel');
   const current = await PayMeth.findOne({
-    where:{
-      descripcion: 'Efectivo'
-    }
+    where: {
+      descripcion: 'Efectivo',
+    },
   });
   if (!current) {
     await PayMeth.create({
-      descripcion: 'Efectivo'
+      descripcion: 'Efectivo',
     });
   }
 }
 
-async function createProduct(){
-  
+async function createProduct() {
   const Product = getModel('ProductModel');
 
   const current = await Product.findOne({
     where: {
-      descripcion: 'Coca Cola'
-    }
+      descripcion: 'Coca Cola',
+    },
   });
   if (!current) {
     await Product.create({
       descripcion: 'Coca Cola',
-      precio: 180
+      precio: 180,
     });
   }
 
   const current2 = await Product.findOne({
     where: {
-      descripcion: 'Pepsi Cola'
-    }
+      descripcion: 'Pepsi Cola',
+    },
   });
   if (!current2) {
     await Product.create({
       descripcion: 'Pepsi Cola',
-      precio: 170
+      precio: 170,
     });
-  }  
+  }
 
   const current3 = await Product.findOne({
     where: {
-      descripcion: 'Hamburguesa'
-    }
+      descripcion: 'Hamburguesa',
+    },
   });
   if (!current3) {
     await Product.create({
       descripcion: 'Hamburguesa',
-      precio: 320
+      precio: 320,
     });
-  }  
+  }
 }
 
-async function createOrder(){
+async function createOrder() {
   const Order = getModel('OrderModel');
   const Product = getModel('ProductModel');
-  const User = getModel('UserModel');  
-  const PayMeth = getModel('PayMethModel');    
+  const User = getModel('UserModel');
+  const PayMeth = getModel('PayMethModel');
 
   const num = 1002;
 
   let current = await Order.findOne({
     where: {
-      numero: num
-    }
+      numero: num,
+    },
   });
 
   if (!current) {
     await Order.create({
       numero: num,
       fecha: '20210826',
-      estado: 'Pendiente',      
-      direccion_entrega:  'nada',
+      estado: 'Pendiente',
+      direccion_entrega: 'nada',
       paymethDescripcion: 'Efectivo',
-      userUserid: 'admin'
-      });
+      userUserid: 'admin',
+    });
 
     current = await Order.findOne({
       where: {
-        numero: num
-      }
+        numero: num,
+      },
     });
     const prdcurrent = await Product.findOne({
       where: {
-        descripcion: 'Hamburguesa'
-      }
+        descripcion: 'Hamburguesa',
+      },
     });
-    if (prdcurrent){
-      await current.addProduct(prdcurrent, {through: {cantidad:3}});
-    }else{
+    if (prdcurrent) {
+      await current.addProduct(prdcurrent, { through: { cantidad: 3 } });
+    } else {
       console.log(chalk.redBright('no existe prd'));
     }
 
@@ -154,6 +151,6 @@ async function createOrder(){
   }
 }
 
-module.exports ={
-  initialize
-}
+module.exports = {
+  initialize,
+};

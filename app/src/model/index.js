@@ -24,15 +24,15 @@ async function connect(host, port, username, password, database) {
   try {
     await conn.authenticate();
     await conn.sync();
-    console.log(chalk.cyan('DB: Connect Success'));
+    global.console.log(chalk.cyan('DB: Connect Success'));
   } catch (err) {
-    console.log(chalk.cyan('DB: Error connect', err));
+    global.console.log(chalk.cyan('DB: Error connect', err));
   }
 }
 
 function getModel(name) {
   if (!models[name]) {
-    console.log(chalk.magenta(`No existe model ${name}`));
+    global.console.log(chalk.magenta(`No existe model ${name}`));
     return null;
   }
   return models[name];

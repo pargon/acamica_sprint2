@@ -1,107 +1,100 @@
 const { DataTypes } = require('sequelize');
 
-function createModel (sequelize){
+function createModel(sequelize) {
   const User = sequelize.define('user', {
     userid: {
       type: DataTypes.STRING(60),
-      unique: true
+      unique: true,
     },
     nombre: {
       type: DataTypes.STRING(60),
-      allowNull: true
+      allowNull: true,
     },
     apellido: {
       type: DataTypes.STRING(60),
-      allowNull: true
+      allowNull: true,
     },
     mail: {
       type: DataTypes.STRING(60),
-      allowNull: true
+      allowNull: true,
     },
     direenvio: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: true,
     },
     telefono: {
       type: DataTypes.STRING(20),
-      allowNull: true
+      allowNull: true,
     },
     password: {
       type: DataTypes.STRING(60),
-      allowNull: true
+      allowNull: true,
     },
     admin: {
       type: DataTypes.BOOLEAN,
-      allowNull: true
-    }},
-    {
-      timestamps: false
-    }
-  );
-//   return User;
-// }
-// function createProductModel (sequelize){
+      allowNull: true,
+    },
+  },
+  {
+    timestamps: false,
+  });
   const Product = sequelize.define('product', {
     descripcion: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: true,
     },
     precio: {
       type: DataTypes.DOUBLE,
-      allowNull: true
-    }},{
-      timestamps: false
-    }
-  );
-//   return Product;
-// }
-// function createPaymethModel (sequelize){
+      allowNull: true,
+    },
+  }, {
+    timestamps: false,
+  });
   const PayMeth = sequelize.define('paymeth', {
     descripcion: {
       type: DataTypes.STRING(100),
-      unique: true
-    }},{
-      timestamps: false
-    }
-    );
-//   return PayMeth;
-// }
-// function createOrderModel (sequelize){
-  const Order =  sequelize.define('order', {
+      unique: true,
+    },
+  }, {
+    timestamps: false,
+  });
+  const Order = sequelize.define('order', {
     numero: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: true,
     },
     fecha: {
       type: DataTypes.DATE,
-      allowNull: true
+      allowNull: true,
     },
     estado: {
       type: DataTypes.STRING(40),
-      allowNull: true
+      allowNull: true,
     },
     direccion_entrega: {
       type: DataTypes.STRING(100),
-      allowNull: true
-    }},{
-      timestamps: false
-    });
-
-  const OrderProduct = sequelize.define('orderproduct',{
-      cantidad: DataTypes.INTEGER
+      allowNull: true,
     },
-    { 
-      timestamps: false 
-    }     
-  );
-  Order.belongsTo( User, { targetKey: 'userid', foreignKey: 'userUserid' });
-  Order.belongsTo( PayMeth, { targetKey: 'descripcion', foreignKey: 'paymethDescripcion' });
-  Order.belongsToMany(Product, {through: OrderProduct});
-  Product.belongsToMany(Order, {through: OrderProduct});
-    
-  return {Order, Product, PayMeth, User};
+  }, {
+    timestamps: false,
+  });
+
+  const OrderProduct = sequelize.define('orderproduct', {
+    cantidad: DataTypes.INTEGER,
+  },
+  {
+    timestamps: false,
+  });
+  Order.belongsTo(User, { targetKey: 'userid', foreignKey: 'userUserid' });
+  Order.belongsTo(PayMeth, { targetKey: 'descripcion', foreignKey: 'paymethDescripcion' });
+  Order.belongsToMany(Product, { through: OrderProduct });
+  Product.belongsToMany(Order, { through: OrderProduct });
+
+  return {
+    Order, Product, PayMeth, User,
+  };
 }
 
-module.exports ={
-  createModel
+module.exports = {
+  createModel,
 };
