@@ -1,7 +1,7 @@
-const { getModel } = require('../../model');
+const db = require('../../model');
 
 async function chkNewUser(req, res, next) {
-  const User = getModel('UserModel');
+  const User = db.getModel('UserModel');
   // buscar por mail
   const current = await User.findOne({
     where: {

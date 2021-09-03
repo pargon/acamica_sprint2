@@ -1,12 +1,13 @@
-/* global describe it beforeEach */
+/* global describe it before */
 
 const sinon = require('sinon');
 const request = require('supertest');
 const database = require('../src/model');
+
 const { makeServer } = require('../src/server');
 
-describe('Api users test', () => {
-  beforeEach(() => {
+describe('Api test Get users', () => {
+  before(() => {
     const ModeloFalso = {
       findAll() {
         return Promise.resolve([
@@ -15,6 +16,14 @@ describe('Api users test', () => {
           },
         ]);
       },
+      findOne: sinon.mock().atLeast(1).returns(null
+        /*{
+        id: 1,
+        userid: 'userfalso1',
+        nombre: 'nombrefalso1',
+      }*/
+      ),
+      create: sinon.mock().atLeast(1),
     };
     sinon.stub(database, 'getModel').returns(ModeloFalso);
     /*
@@ -36,5 +45,16 @@ describe('Api users test', () => {
       .expect('Content-Length', '10')
       .expect(200)
       .end(done);
+  });
+
+  it('return new user', (done) => {
+    const server = makeServer();
+    request(server)
+      .post('/api/v1/users')
+      .expect('Content-Type', /json/)
+      .expect(200,
+        {
+          mensaje: 'Usuario Creado'
+        }, done);
   });
 });

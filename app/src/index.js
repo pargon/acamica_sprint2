@@ -18,8 +18,6 @@ async function main() {
     MYSQL_HOST,
   } = process.env;
 
-  // console.log(chalk.green(MYSQL_HOST));
-
   // express
   const PORT = process.env.EXPRESS_PORT || 4040;
   const server = makeServer();
@@ -41,7 +39,6 @@ async function main() {
   };
   const swaggerDocs = swaggerJsDoc(swaggerOptions);
   server.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs));
-
 
   // database
   await connect(MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASS, MYSQL_DATABASE);
