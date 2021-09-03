@@ -8,6 +8,15 @@ const { makeServer } = require('../src/server');
 
 describe('Api test Get users', () => {
   before(() => {
+    const vFindOne = sinon.stub();
+    vFindOne.onCall(0).returns(null);
+    vFindOne.onCall(1).returns(null);
+    vFindOne.onCall(2).returns({
+      id: 1,
+      userid: 'userfalso1',
+      nombre: 'nombrefalso1',
+    });
+
     const ModeloFalso = {
       findAll() {
         return Promise.resolve([
@@ -16,14 +25,8 @@ describe('Api test Get users', () => {
           },
         ]);
       },
-      findOne: sinon.mock().atLeast(1).returns(null
-        /*{
-        id: 1,
-        userid: 'userfalso1',
-        nombre: 'nombrefalso1',
-      }*/
-      ),
-      create: sinon.mock().atLeast(1),
+      findOne: vFindOne,
+      create: sinon.mock().atLeast(1).returns(null),
     };
     sinon.stub(database, 'getModel').returns(ModeloFalso);
     /*
@@ -52,9 +55,14 @@ describe('Api test Get users', () => {
     request(server)
       .post('/api/v1/users')
       .expect('Content-Type', /json/)
-      .expect(200,
+      .expect(200)
+      .expect(
         {
-          mensaje: 'Usuario Creado'
-        }, done);
+          id: 1,
+          userid: 'userfalso1',
+          nombre: 'nombrefalso1',
+        },
+        done,
+      );
   });
 });

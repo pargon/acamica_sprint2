@@ -24,6 +24,7 @@ function createRouter() {
  *    - "application/json"
  *    responses:
  *      200:
+ *        schema: { nombre: String, apellido: String, mail: String, direccionenvio: String, telefono: String, userid: String, password: String}
  *        description: Usuario Creado
  */
   router.post('/', chkNewUser, async (req, res) => {
@@ -48,7 +49,10 @@ function createRouter() {
       password,
       admin: false,
     });
-    res.status(200).json({ mensaje: 'Usuario Creado' });
+    const newUser = await User.findOne({
+      where: { userid },
+    });
+    res.status(200).json(newUser);
   });
   /**
    * @swagger
