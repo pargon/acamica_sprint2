@@ -1,4 +1,9 @@
+/* eslint-disable max-len */
 const { Router } = require('express');
+const db = require('../../model');
+const {
+  chkToken, chkAdmin,
+} = require('../midds');
 
 function createRouter() {
   const router = Router();
@@ -22,18 +27,52 @@ function createRouter() {
    *      in: body
    *      required: true
    *      type: string
-   *      example: {codmediopago: String, descripcion: String}
+   *      example: {descripcion: String}
    *    produces:
    *    - "application/json"
    *    responses:
    *      200:
    *        description: Medio de Pago creado
-   *      405:
-   *        description: Código existente
+   *      409:
+   *        description: Ya existe el Medio de Pago
    */
-   router.post('/', /*chk.validaSesion, chk.validaUsuarioAdmin, */ async(req, res) => {
-    res.status(200).json({mensaje:"Medio de Pago creado"});
-   });
+  router.post('/', chkToken, chkAdmin, async (req, res) => {
+    // get modelo
+    const PayMeth = db.getModel('PayMethModel');
+    const {
+      descripcion,
+    } = req.body;
+
+    // buscar por descripcion
+    const current = await PayMeth.findOne({
+      where: {
+        descripcion,
+      },
+    });
+
+    // si encuentra, error
+    if (current) {
+      res
+        .status(409)
+        .send({ message: 'Ya existe el Medio de Pago' });
+    } else {
+      try {
+        // crea nuevo medio de pago
+        const newPayMeth = await PayMeth.create({
+          descripcion,
+        });
+
+        // retorna
+        res
+          .status(200)
+          .json(newPayMeth);
+      } catch (error) {
+        res
+          .status(501)
+          .json(error);
+      }
+    }
+  });
   /**
    * @swagger
    * /paymeths:
@@ -53,17 +92,67 @@ function createRouter() {
    *      in: body
    *      required: true
    *      type: string
-   *      example: {codmediopago: String, descripcion: String}
+   *      example: {id: Number, descripcion: String}
    *    produces:
    *    - "application/json"
    *    responses:
    *      200:
    *        description: Medio de Pago actualizado
    *      404:
-   *        description: Código no encontrado
+   *        description: Medio de Pago no encontrado
+   *      409:
+   *        description: Ya existe el Medio de Pago con esa Descripción
    */
-  router.put('/', /*chk.validaSesion, chk.validaUsuarioAdmin, */ async(req, res) => {
-    res.status(200).json({mensaje:"Medio de Pago actualizado"});
+  router.put('/', chkToken, chkAdmin, async (req, res) => {
+    // get modelo
+    const PayMeth = db.getModel('PayMethModel');
+    const {
+      id,
+      descripcion,
+    } = req.body;
+
+    // buscar por id
+    const current = await PayMeth.findOne({
+      where: {
+        id,
+      },
+    });
+    // si encuentra, actualiza
+    if (!current) {
+      res
+        .status(404)
+        .json({ message: 'Medio de Pago no encontrado' });
+    } else {
+      // buscar por descripcion
+      const currDesc = await PayMeth.findOne({
+        where: {
+          descripcion,
+        },
+      });
+
+      // si encuentra misma desc, error
+      if (currDesc) {
+        res
+          .status(409)
+          .json({ message: 'Ya existe el Medio de Pago con esa Descripción' });
+      } else {
+        try {
+          // update base
+          current.descripcion = descripcion;
+          await current.save();
+
+          res
+            .status(200)
+            .json(current);
+        } catch (error) {
+          // si no encuentra, error
+
+          res
+            .status(501)
+            .json(error);
+        }
+      }
+    }
   });
   /**
    * @swagger
@@ -84,21 +173,52 @@ function createRouter() {
    *      in: body
    *      required: true
    *      type: string
-   *      example: {codmediopago: String}
+   *      example: {id: Number}
    *    produces:
    *    - "application/json"
    *    responses:
    *      200:
-   *        description: Medio de Pago actualizado
+   *        description: Medio de Pago eliminado
    *      404:
-   *        description: Código no encontrado
+   *        description: Medio de Pago no encontrado
    */
-  router.delete('/', /*chk.validaSesion, chk.validaUsuarioAdmin,*/ async (req, res) => {
-    res.status(200).json({mensaje:"Medio de Pago actualizado"});
+  router.delete('/', chkToken, chkAdmin, async (req, res) => {
+    // get modelo
+    const PayMeth = db.getModel('PayMethModel');
+    const {
+      id,
+    } = req.body;
+
+    // buscar por id
+    const current = await PayMeth.findOne({
+      where: {
+        id,
+      },
+    });
+    // si encuentra, actualiza
+    if (!current) {
+      res
+        .status(404)
+        .json({ message: 'Medio de Pago no encontrado' });
+    } else {
+      try {
+        // delete medio
+        await current.destroy();
+
+        res
+          .status(200)
+          .json({ message: 'Medio de Pago eliminado' });
+      } catch (error) {
+        // si no encuentra, error
+        res
+          .status(501)
+          .json(error);
+      }
+    }
   });
   /**
    * @swagger
-   * /paymeths/all:
+   * /paymeths:
    *  get:
    *    summary: Lista medios de pago
    *    description: Obtener un listado con todos los medios de pago (sólo usuario Admin puede invocar).
@@ -115,28 +235,14 @@ function createRouter() {
    *        description: Peticion exitosa
    *
    */
-  router.get('/todos', /*chk.validaSesion, chk.validaUsuarioAdmin,*/ async (req, res) => {
-    const listado = {};
-    res.status(200).json(listado);
+  router.get('/', chkToken, chkAdmin, async (req, res) => {
+    const PayMeth = db.getModel('PayMethModel');
+    const paymeths = await PayMeth.findAll({});
+    res
+      .status(200)
+      .json(paymeths);
   });
 
-
-    /*
-  router.get('/', cache, async (req, res) => {
-    const PayMeth = getModel('PayMethModel');
-    console.time('GET PayMeths');
-    const payMeths = await PayMeth.findAll({});
-    console.timeEnd('GET PayMeths');
-    res.json(payMeths);
-  });
-
-  router.post('/', cleanCache, async (req, res) => {
-    const article = req.body;
-    const Post = getModel('Post');
-    await Post.create(article);
-    res.json(article);
-  });
-*/
   return router;
 }
 

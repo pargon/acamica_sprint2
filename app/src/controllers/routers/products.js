@@ -1,4 +1,9 @@
+const chalk = require('chalk');
 const { Router } = require('express');
+const db = require('../../model');
+const {
+  chkToken, chkAdmin,
+} = require('../midds');
 
 function createRouter() {
   const router = Router();
@@ -22,17 +27,53 @@ function createRouter() {
    *      in: body
    *      required: true
    *      type: string
-   *      example: {codproducto: String, descripcion: String, precio: Number}
+   *      example: {descripcion: String, precio: Number}
    *    produces:
    *    - "application/json"
    *    responses:
    *      200:
    *        description: Producto creado
-   *      405:
-   *        description: Código existente
+   *      409:
+   *        description: Ya existe el producto
    */
-  router.post('/', /* chk.validaSesion, chk.validaUsuarioAdmin, */ async(req, res) => {
-    res.status(200).json({mensaje:"Producto creado"});
+  router.post('/', chkToken, chkAdmin, async (req, res) => {
+    // get modelo
+    const Product = db.getModel('ProductModel');
+    const {
+      descripcion,
+      precio,
+    } = req.body;
+
+    // buscar por descripcion
+    const current = await Product.findOne({
+      where: {
+        descripcion,
+      },
+    });
+
+    // si encuentra, error
+    if (current) {
+      res
+        .status(409)
+        .send({ message: 'Ya existe el producto' });
+    } else {
+      try {
+        // crea nuevo producto
+        const newProduct = await Product.create({
+          descripcion,
+          precio,
+        });
+
+        // retorna
+        res
+          .status(200)
+          .json(newProduct);
+      } catch (error) {
+        res
+          .status(501)
+          .json(error);
+      }
+    }
   });
   /**
    * @swagger
@@ -53,17 +94,69 @@ function createRouter() {
    *      in: body
    *      required: true
    *      type: string
-   *      example: {codproducto: String, descripcion: String, precio: Number}
+   *      example: {id: Number, descripcion: String, precio: Number}
    *    produces:
    *    - "application/json"
    *    responses:
    *      200:
    *        description: Producto actualizado
    *      404:
-   *        description: Código no encontrado
+   *        description: Producto no encontrado
+   *      409:
+   *        description: Producto ya existente con esa Descripción
    */
-  router.put('/', /*chk.validaSesion, chk.validaUsuarioAdmin, */ async(req, res) => {
-    res.status(200).json({mensaje:"Producto actualizado"});
+  router.put('/', chkToken, chkAdmin, async (req, res) => {
+    // get modelo
+    const Product = db.getModel('ProductModel');
+    const {
+      id,
+      descripcion,
+      precio,
+    } = req.body;
+
+    // buscar por id
+    const current = await Product.findOne({
+      where: {
+        id,
+      },
+    });
+    // si encuentra, actualiza
+    if (!current) {
+      res
+        .status(404)
+        .json({ message: 'Producto no encontrado' });
+    } else {
+      // busca desc
+      const currDesc = await Product.findOne({
+        where: {
+          descripcion,
+        },
+      });
+
+      // si encuentra misma desc, error
+      if (currDesc) {
+        res
+          .status(409)
+          .json({ message: 'Producto ya existente con esa Descripción' });
+      } else {
+        try {
+          // update base
+          current.descripcion = descripcion;
+          current.precio = precio;
+          await current.save();
+
+          res
+            .status(200)
+            .json(current);
+        } catch (error) {
+          // si no encuentra, error
+
+          res
+            .status(501)
+            .json(error);
+        }
+      }
+    }
   });
   /**
    * @swagger
@@ -84,21 +177,51 @@ function createRouter() {
    *      in: body
    *      required: true
    *      type: string
-   *      example: {codproducto: String}
+   *      example: {id: Number}
    *    produces:
    *    - "application/json"
    *    responses:
    *      200:
    *        description: Producto eliminado
    *      404:
-   *        description: Código no encontrado
+   *        description: Producto no encontrado
    */
-  router.delete('/', /*chk.validaSesion, chk.validaUsuarioAdmin, */ async(req, res) => {
-    res.status(200).json({mensaje:"Prodcuto eliminado"});
+  router.delete('/', chkToken, chkAdmin, async (req, res) => {
+    // get modelo
+    const Product = db.getModel('ProductModel');
+    const {
+      id,
+    } = req.body;
+
+    // buscar por id
+    const current = await Product.findOne({
+      where: {
+        id,
+      },
+    });
+    // si no encuentra, error
+    if (!current) {
+      res
+        .status(404)
+        .json({ message: 'Producto no encontrado' });
+    } else {
+      try {
+        // delete prod
+        await current.destroy();
+
+        res
+          .status(200)
+          .json({ message: 'Producto eliminado' });
+      } catch (error) {
+        res
+          .status(501)
+          .json(error);
+      }
+    }
   });
   /**
    * @swagger
-   * /products/all:
+   * /products:
    *  get:
    *    summary: Lista todos los productos
    *    description: Obtener un listado de todos los productos (sólo usuario Admin puede invocar).
@@ -115,27 +238,14 @@ function createRouter() {
    *        description: Peticion exitosa
    *
    */
-  router.get('/todos', /*chk.validaSesion, chk.validaUsuarioAdmin, */ async(req, res) => {
-    const listado = {};
-    res.status(200).json(listado);
-  });
-
-  /*
-  router.get('/', cache, async (req, res) => {
-    const Product = getModel('ProductModel');
-    console.time('GET Products');
+  router.get('/', chkToken, chkAdmin, async (req, res) => {
+    const Product = db.getModel('ProductModel');
     const products = await Product.findAll({});
-    console.timeEnd('GET Products');
-    res.json(products);
+    res
+      .status(200)
+      .json(products);
   });
 
-  router.post('/', cleanCache, async (req, res) => {
-    const article = req.body;
-    const Post = getModel('Post');
-    await Post.create(article);
-    res.json(article);
-  });
-*/
   return router;
 }
 

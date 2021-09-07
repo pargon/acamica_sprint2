@@ -1,5 +1,9 @@
+/* eslint-disable max-len */
 const { Router } = require('express');
-const { getModel } = require('../../model');
+const db = require('../../model');
+const {
+  chkToken, chkAdmin,
+} = require('../midds');
 
 function createRouter() {
   const router = Router();
@@ -30,9 +34,8 @@ function createRouter() {
    *      200:
    *        description: Pedido creado
    */
-  router.post('/', /*chk.validaSesion, chk.validaDetallePedido,*/ async (req, res) => {
-    
-    res.status(200).json({mensaje:"Pedido creado"});
+  router.post('/', /* chk.validaSesion, chk.validaDetallePedido, */ async (req, res) => {
+    res.status(200).json({ mensaje: 'Pedido creado' });
   });
   /**
    * @swagger
@@ -67,7 +70,7 @@ function createRouter() {
    *        description: El Pedido debe estar Pendiente
    */
   router.put('/', /* chk.validaSesion, chk.validaModificaPedido, chk.validaDetallePedido, */ async (req, res) => {
-    res.status(200).json({mensaje:"Pedido actualizado"});
+    res.status(200).json({ mensaje: 'Pedido actualizado' });
   });
   /**
    * @swagger
@@ -90,7 +93,7 @@ function createRouter() {
    *        description: Usuario no encontrado
    *
    */
-  router.get('/', /*chk.validaSesion, */ async (req, res) => {
+  router.get('/', /* chk.validaSesion, */ async (req, res) => {
     const listado = {};
     res.status(200).json(listado);
   });
@@ -113,21 +116,23 @@ function createRouter() {
    *        description: Peticion exitosa
    *      401:
    *        description: Usuario no es Admin
-   *      404:
-   *        description: Usuario no existe
+   *      401:
+   *        description: Usuario no encontrado
+   *      401:
+   *        description: Invalid Token|
    *
    */
-  router.get('/all', /*chk.validaSesion, chk.validaUsuarioAdmin, */ async (req, res) => {
-    const Order = getModel('OrderModel');
-    console.time('GET Orders');
-    const User = getModel('UserModel');
-    const Product = getModel('ProductModel');
-    const PayMeth = getModel('PayMethModel');
+  router.get('/all', chkToken, chkAdmin, async (req, res) => {
+    const Order = db.getModel('OrderModel');
+    const User = db.getModel('UserModel');
+    const Product = db.getModel('ProductModel');
+    const PayMeth = db.getModel('PayMethModel');
 
-    const orders = await Order.findAll({ include: [Product, User, PayMeth]  });
-    console.timeEnd('GET Orders');
-    res.json(orders);
-    res.status(200).json(orders);
+    const orders = await Order.findAll({ include: [Product, User, PayMeth] });
+
+    res
+      .status(200)
+      .json(orders);
   });
   /**
    * @swagger
@@ -157,26 +162,10 @@ function createRouter() {
    *      404:
    *        description: Pedido no encontrado
    */
-  router.put('/status', /*chk.validaSesion, chk.validaUsuarioAdmin, chk.validaModificaPedido, */ async(req, res) => {
-    res.status(200).json({mensaje:"Pedido actualizado"});
+  router.put('/status', /* chk.validaSesion, chk.validaUsuarioAdmin, chk.validaModificaPedido, */ async (req, res) => {
+    res.status(200).json({ mensaje: 'Pedido actualizado' });
   });
 
-/*
-  router.get('/', cache, async (req, res) => {
-    const Order = getModel('OrderModel');
-    console.time('GET Orders');
-    const orders = await Order.findAll({ include: [{model:ProductModel}]});
-    console.timeEnd('GET Orders');
-    res.json(orders);
-  });
-
-  router.post('/', cleanCache, async (req, res) => {
-    const article = req.body;
-    const Post = getModel('Post');
-    await Post.create(article);
-    res.json(article);
-  });
-*/
   return router;
 }
 

@@ -1,6 +1,9 @@
+/* eslint-disable max-len */
 const { Router } = require('express');
 const db = require('../../model');
-const { chkNewUser } = require('../midds');
+const {
+  chkNewUser, login, newToken, chkToken, chkAdmin,
+} = require('../midds');
 
 function createRouter() {
   const router = Router();
@@ -24,8 +27,9 @@ function createRouter() {
  *    - "application/json"
  *    responses:
  *      200:
- *        schema: { nombre: String, apellido: String, mail: String, direccionenvio: String, telefono: String, userid: String, password: String}
- *        description: Usuario Creado
+ *        description: Usuario Creado.
+ *        type: string
+ *        example: { nombre: String, apellido: String, mail: String, direccionenvio: String, telefono: String, userid: String, password: String}
  */
   router.post('/', chkNewUser, async (req, res) => {
     const User = db.getModel('UserModel');
@@ -39,7 +43,7 @@ function createRouter() {
       password,
     } = req.body;
 
-    await User.create({
+    const newUser = await User.create({
       userid,
       nombre,
       apellido,
@@ -48,9 +52,6 @@ function createRouter() {
       telefono,
       password,
       admin: false,
-    });
-    const newUser = await User.findOne({
-      where: { userid },
     });
     res.status(200).json(newUser);
   });
@@ -79,12 +80,11 @@ function createRouter() {
    *      404:
    *        description: Usuario no encontrado
    */
-  router.post('/login', async (req, res) => {
-    const loginId = 1;
-    res.status(200).json({ id: loginId });
+  router.post('/login', login, newToken, async (req, res) => {
+    res.status(404);
   });
 
-  router.get('/', /* cache, */ async (req, res) => {
+  router.get('/', chkToken, chkAdmin, async (req, res) => {
     const User = db.getModel('UserModel');
     global.console.time('GET Users');
     const users = await User.findAll({});
@@ -92,13 +92,6 @@ function createRouter() {
     res.json(users);
   });
 
-  /*  router.post('/', cleanCache, async (req, res) => {
-      const article = req.body;
-      const Post = db.getModel('Post');
-      await Post.create(article);
-      res.json(article);
-    });
-  */
   return router;
 }
 
