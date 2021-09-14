@@ -1,9 +1,9 @@
+/* eslint-disable no-restricted-syntax */
 /* eslint-disable max-len */
 const { Router } = require('express');
 const db = require('../../model');
-const {
-  chkToken, chkAdmin,
-} = require('../midds');
+const { chkToken } = require('../midds/token');
+const { chkAdmin } = require('../midds/users');
 
 function createRouter() {
   const router = Router();
@@ -27,15 +27,71 @@ function createRouter() {
    *      in: body
    *      required: true
    *      type: string
-   *      example: {codmediopago: String, detalle: {codproducto: String, cantidad: Number}}
+   *      example: {medioPago: String, direccionEntrega: String, detalle: {producto: String, cantidad: Number}}
    *    produces:
    *    - "application/json"
    *    responses:
    *      200:
    *        description: Pedido creado
    */
-  router.post('/', /* chk.validaSesion, chk.validaDetallePedido, */ async (req, res) => {
-    res.status(200).json({ mensaje: 'Pedido creado' });
+  router.post('/', chkToken, async (req, res) => {
+    // get modelo
+    const Product = db.getModel('ProductModel');
+    const Order = db.getModel('OrderModel');
+    const {
+      medioPago,
+      direccionEntrega,
+    } = req.body;
+
+    try {
+      // setea variables fijas
+      const fecha = Date();
+      const estado = 'Pendiente';
+      const { userid } = req.user;
+
+      // crea registro pedido
+      const order = await Order.create({
+        numero: 1,
+        fecha,
+        paymethDescripcion: medioPago,
+        estado,
+        direccion_entrega: direccionEntrega,
+        userUserid: userid,
+      });
+
+      // array de productos
+      const detalleProductos = await Promise.all(req.body.detalle.map((elemento) => Product.findOne({
+        where: {
+          descripcion: elemento.producto,
+        },
+      })));
+
+      let i = 0;
+      for (const { cantidad } of req.body.detalle) {
+        // busca producto
+        const product = detalleProductos[i];
+        if (product) {
+          if (cantidad > 0) {
+            // agrega detalle tabla
+            order.addProduct(product, { through: { cantidad } });
+          } else {
+            res.status(404).json({ message: 'Cantidad inválida' });
+          }
+        } else {
+          res.status(404).json({ message: 'Producto no encontrado' });
+        }
+
+        i += 1;
+      }
+      // guardo la order
+      await order.save();
+
+      // devuelvo ok el endpoint
+      res.status(200).json(order);
+    } catch (error) {
+      global.console.log(error);
+      res.status(406).json(error);
+    }
   });
   /**
    * @swagger
@@ -93,7 +149,7 @@ function createRouter() {
    *        description: Usuario no encontrado
    *
    */
-  router.get('/', /* chk.validaSesion, */ async (req, res) => {
+  router.get('/', chkToken, async (req, res) => {
     const listado = {};
     res.status(200).json(listado);
   });
@@ -116,10 +172,10 @@ function createRouter() {
    *        description: Peticion exitosa
    *      401:
    *        description: Usuario no es Admin
-   *      401:
-   *        description: Usuario no encontrado
-   *      401:
+   *      403:
    *        description: Invalid Token|
+   *      404:
+   *        description: Usuario no encontrado
    *
    */
   router.get('/all', chkToken, chkAdmin, async (req, res) => {

@@ -3,8 +3,7 @@ const { config } = require('dotenv');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUI = require('swagger-ui-express');
 const path = require('path');
-const { initialize } = require('./config/db');
-const { connect } = require('./model');
+const { connect, redisConn } = require('./model');
 const { makeServer } = require('./server');
 
 async function main() {
@@ -42,7 +41,9 @@ async function main() {
 
   // database
   await connect(MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASS, MYSQL_DATABASE);
-  //initialize();
+
+  // redis
+  redisConn();
 }
 
 main();

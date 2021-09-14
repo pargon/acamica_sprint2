@@ -1,9 +1,9 @@
 /* eslint-disable max-len */
 const { Router } = require('express');
+const CryptoJS = require('crypto-js');
 const db = require('../../model');
-const {
-  chkNewUser, login, newToken, chkToken, chkAdmin,
-} = require('../midds');
+const { chkNewUser, login, chkAdmin } = require('../midds/users');
+const { newToken, chkToken } = require('../midds/token');
 
 function createRouter() {
   const router = Router();
@@ -32,6 +32,7 @@ function createRouter() {
  *        example: { nombre: String, apellido: String, mail: String, direccionenvio: String, telefono: String, userid: String, password: String}
  */
   router.post('/', chkNewUser, async (req, res) => {
+    const { CRYPTO_KEY } = process.env;
     const User = db.getModel('UserModel');
     const {
       userid,
@@ -43,6 +44,10 @@ function createRouter() {
       password,
     } = req.body;
 
+    // encripta pass
+    const passwordCryp = CryptoJS.AES.encrypt(password, CRYPTO_KEY).toString();
+
+    // inserta base
     const newUser = await User.create({
       userid,
       nombre,
@@ -50,7 +55,7 @@ function createRouter() {
       mail,
       direenvio,
       telefono,
-      password,
+      password: passwordCryp,
       admin: false,
     });
     res.status(200).json(newUser);
@@ -81,7 +86,10 @@ function createRouter() {
    *        description: Usuario no encontrado
    */
   router.post('/login', login, newToken, async (req, res) => {
-    res.status(404);
+    if (req.token) {
+      return res.status(200).json({ token: req.token });
+    }
+    return res.status(404);
   });
 
   router.get('/', chkToken, chkAdmin, async (req, res) => {

@@ -1,9 +1,8 @@
 /* eslint-disable max-len */
 const { Router } = require('express');
 const db = require('../../model');
-const {
-  chkToken, chkAdmin,
-} = require('../midds');
+const { chkToken } = require('../midds/token');
+const { chkAdmin } = require('../midds/users');
 
 function createRouter() {
   const router = Router();

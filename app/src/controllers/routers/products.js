@@ -1,9 +1,8 @@
-const chalk = require('chalk');
 const { Router } = require('express');
 const db = require('../../model');
-const {
-  chkToken, chkAdmin,
-} = require('../midds');
+const { chkToken } = require('../midds/token');
+const { chkAdmin } = require('../midds/users');
+const { cache, storeObjectInCache, invalidateCache } = require('../midds/cache');
 
 function createRouter() {
   const router = Router();
@@ -62,6 +61,12 @@ function createRouter() {
         const newProduct = await Product.create({
           descripcion,
           precio,
+        });
+
+        // limpio cache
+        invalidateCache({
+          method: 'GET',
+          baseUrl: req.baseUrl,
         });
 
         // retorna
@@ -145,6 +150,12 @@ function createRouter() {
           current.precio = precio;
           await current.save();
 
+          // limpio cache
+          invalidateCache({
+            method: 'GET',
+            baseUrl: req.baseUrl,
+          });
+
           res
             .status(200)
             .json(current);
@@ -209,6 +220,12 @@ function createRouter() {
         // delete prod
         await current.destroy();
 
+        // limpio cache
+        invalidateCache({
+          method: 'GET',
+          baseUrl: req.baseUrl,
+        });
+
         res
           .status(200)
           .json({ message: 'Producto eliminado' });
@@ -238,9 +255,15 @@ function createRouter() {
    *        description: Peticion exitosa
    *
    */
-  router.get('/', chkToken, chkAdmin, async (req, res) => {
+  router.get('/', chkToken, chkAdmin, cache, async (req, res) => {
+    // modelo de datos
     const Product = db.getModel('ProductModel');
+    // recupera en DB
     const products = await Product.findAll({});
+
+    // guarda en cache
+    storeObjectInCache(req, products);
+
     res
       .status(200)
       .json(products);

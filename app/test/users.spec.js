@@ -1,12 +1,14 @@
 /* global describe it before */
-
 const sinon = require('sinon');
 const request = require('supertest');
 const database = require('../src/model');
-
+const users = require('../src/controllers/midds/users');
+const token = require('../src/controllers/midds/token');
 const { makeServer } = require('../src/server');
 
-describe('Api test Get users', () => {
+process.env.CRYPTO_KEY = 'HOLA';
+
+describe('Api test users', () => {
   before(() => {
     const vFindOne = sinon.stub();
     vFindOne.onCall(0).returns(null);
@@ -16,7 +18,6 @@ describe('Api test Get users', () => {
       userid: 'userfalso1',
       nombre: 'nombrefalso1',
     });
-
     const ModeloFalso = {
       findAll() {
         return Promise.resolve([
@@ -28,26 +29,12 @@ describe('Api test Get users', () => {
       findOne: vFindOne,
       create: sinon.mock().atLeast(1).returns(null),
     };
+    // saltamos getModel
     sinon.stub(database, 'getModel').returns(ModeloFalso);
-    /*
-    sinon.stub(database, 'getModel').callsFake((modelName) => {
-      if (modelName === 'UserModel') {
-        return ModeloFalso;
-      }
-      return null;
-    });
-    */
-  });
-
-  it('return list of users', (done) => {
-    const server = makeServer();
-
-    request(server)
-      .get('/api/v1/users')
-      .expect('Content-Type', /json/)
-      .expect('Content-Length', '10')
-      .expect(200)
-      .end(done);
+    // saltamos validación de token
+    sinon.stub(token, 'chkToken').callsFake((req, res, next) => { next(); });
+    // saltamos validación de admin
+    sinon.stub(users, 'chkAdmin').callsFake((req, res, next) => { next(); });
   });
 
   it('return new user', (done) => {

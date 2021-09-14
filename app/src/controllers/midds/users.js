@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken');
+const CryptoJS = require('crypto-js');
 const db = require('../../model');
 
 async function chkNewUser(req, res, next) {
@@ -31,6 +31,7 @@ async function chkNewUser(req, res, next) {
 }
 
 async function login(req, res, next) {
+  const { CRYPTO_KEY } = process.env;
   const User = db.getModel('UserModel');
   // buscar por userid
   const current = await User.findOne({
@@ -39,7 +40,12 @@ async function login(req, res, next) {
     },
   });
   if (current) {
-    if (current.password === req.body.password) {
+    // desencripta pass guardado
+    const bytesPass = CryptoJS.AES.decrypt(current.password, CRYPTO_KEY);
+    const password = bytesPass.toString(CryptoJS.enc.Utf8);
+
+    // coinciden pass encriptados
+    if (password === req.body.password) {
       next();
     } else {
       res
@@ -48,44 +54,8 @@ async function login(req, res, next) {
     }
   } else {
     res
-      .status(401)
+      .status(404)
       .send({ message: 'Usuario no encontrado' });
-  }
-}
-
-async function newToken(req, res, next) {
-  const { JWT_PASS } = process.env;
-  const { userid } = req.body;
-
-  try {
-    const newtoken = jwt.sign({ userid }, JWT_PASS, { expiresIn: '1h' });
-
-    res
-      .status(200)
-      .json({ token: newtoken });
-  } catch (error) {
-    res
-      .status(401)
-      .json(
-        { message: 'Invalid credential' },
-      );
-  }
-}
-
-async function chkToken(req, res, next) {
-  const { JWT_PASS } = process.env;
-  const bearer = req.headers.authorization;
-  const token = (bearer !== undefined ? bearer : '')
-    .replace('Bearer ', '');
-
-  try {
-    const decoded = jwt.verify(token, JWT_PASS);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    res
-      .status(401)
-      .json({ message: 'Invalid credential' });
   }
 }
 
@@ -108,15 +78,13 @@ async function chkAdmin(req, res, next) {
     }
   } else {
     res
-      .status(401)
+      .status(404)
       .json({ message: 'Usuario no encontrado' });
   }
 }
 
 module.exports = {
   chkNewUser,
-  newToken,
   login,
-  chkToken,
   chkAdmin,
 };
