@@ -13,11 +13,7 @@ describe('Api test users', () => {
     const vFindOne = sinon.stub();
     vFindOne.onCall(0).returns(null);
     vFindOne.onCall(1).returns(null);
-    vFindOne.onCall(2).returns({
-      id: 1,
-      userid: 'userfalso1',
-      nombre: 'nombrefalso1',
-    });
+
     const ModeloFalso = {
       findAll() {
         return Promise.resolve([
@@ -27,7 +23,11 @@ describe('Api test users', () => {
         ]);
       },
       findOne: vFindOne,
-      create: sinon.mock().atLeast(1).returns(null),
+      create: sinon.mock().atLeast(1).returns({
+        id: 1,
+        userid: 'userfalso1',
+        nombre: 'nombrefalso1',
+      }),
     };
     // saltamos getModel
     sinon.stub(database, 'getModel').returns(ModeloFalso);

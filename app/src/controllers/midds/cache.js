@@ -1,13 +1,6 @@
 const chalk = require('chalk');
 const db = require('../index');
 
-// const client = redis.createClient({
-//   host: '127.0.0.1',
-//   port: 6379,
-// });
-// client.on('error', (error) => {
-//   console.error(error);
-// });
 
 function makeKey(req) {
   return `${req.method}_${req.baseUrl}`;
@@ -18,36 +11,47 @@ function cache(req, res, next) {
 
   // arma key con pedido y token
   const key = makeKey(req);
-  console.log(chalk.blue(`cache ${JSON.stringify(key)}`));
+  console.log(chalk.greenBright(`get ${key}`));
 
-  // recupera cache
-  client.get(key, (error, data) => {
-    if (error) throw error;
-
-    if (data !== null) {
-      // retorna lo guardado
-      res.status(200).send(data);
-    } else {
-      // si hay error, sigue para que recupere en DB
-      next();
-    }
-  });
-  next();
+  try {
+    // recupera cache
+    client.get(key, (error, data) => {
+      if (error || !data) {
+        next();
+      } else {
+        const jsonValue = JSON.parse(data);
+        console.log(chalk.greenBright(`CACHE ${key}`));
+        res
+        .status(200)
+        .json(jsonValue);
+      }
+    });
+  } catch (error) {
+    console.log(chalk.redBright(`Get ${error}`));
+    next();
+  }
 }
 
-async function storeObjectInCache(req, value) {
+function storeObjectInCache(req, value) {
   const client = db.getModel('Redis');
 
   const key = makeKey(req);
   const jsonValue = JSON.stringify(value);
-  console.log(chalk.greenBright(`${key} ${jsonValue}`));
-  await client.set(key, jsonValue);
+
+  try {
+    console.log(chalk.greenBright(`STORE ${key} ${jsonValue}`));
+    client.set(key, jsonValue);
+  } catch (error) {
+    console.log(chalk.redBright(`Store ${error}`));
+  }
 }
 
 function invalidateCache(req) {
   const client = db.getModel('Redis');
-  
+
   const key = makeKey(req);
+  console.log(chalk.greenBright(`DEL ${key}`));
+
   client.DEL(key);
 }
 

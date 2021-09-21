@@ -1,11 +1,11 @@
 const Sequelize = require('sequelize');
 const { DataTypes } = require('sequelize');
 const chalk = require('chalk');
-const redis = require('redis');
 const { createModel: createProductModel } = require('./models/product');
 const { createModel: createUserModel } = require('./models/user');
 const { createModel: createPayMethModel } = require('./models/paymeth');
 const { createModel: createOrderModel } = require('./models/order');
+const redis = require('redis');
 
 const models = {};
 
@@ -48,18 +48,21 @@ async function connect(host, port, username, password, database) {
   }
 }
 
-function redisConn() {
+function redisConn(REDIS_HOST, REDIS_PORT) {
   try {
     const client = redis.createClient({
-      host: '127.0.0.1',
-      port: 6379,
+      host: REDIS_HOST,
+      port: REDIS_PORT,
+    });
+    client.on('error', (err) => {
+      global.console.log(chalk.red('Redis: Error connect', err));
     });
 
     models.Redis = client;
 
     global.console.log(chalk.cyan('Redis: Connect Success'));
   } catch (err) {
-    global.console.log(chalk.cyan('Redis: Error connect', err));
+    global.console.log(chalk.red('Redis: Error connect', err));
   }
 }
 

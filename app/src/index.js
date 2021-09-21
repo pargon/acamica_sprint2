@@ -3,6 +3,7 @@ const { config } = require('dotenv');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUI = require('swagger-ui-express');
 const path = require('path');
+const helmet = require('helmet');
 const { connect, redisConn } = require('./model');
 const { makeServer } = require('./server');
 
@@ -15,6 +16,8 @@ async function main() {
     MYSQL_DATABASE,
     MYSQL_PORT,
     MYSQL_HOST,
+    REDIS_HOST,
+    REDIS_PORT,
   } = process.env;
 
   // express
@@ -39,11 +42,14 @@ async function main() {
   const swaggerDocs = swaggerJsDoc(swaggerOptions);
   server.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs));
 
+  // helmet
+  server.use(helmet());
+
   // database
   await connect(MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASS, MYSQL_DATABASE);
 
   // redis
-  redisConn();
+  redisConn(REDIS_HOST, REDIS_PORT);
 }
 
 main();

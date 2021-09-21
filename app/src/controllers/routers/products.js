@@ -138,8 +138,8 @@ function createRouter() {
         },
       });
 
-      // si encuentra misma desc, error
-      if (currDesc) {
+      // si encuentra misma desc  , error
+      if (currDesc && currDesc.descripcion !== current.descripcion) {
         res
           .status(409)
           .json({ message: 'Producto ya existente con esa Descripción' });
@@ -260,13 +260,12 @@ function createRouter() {
     const Product = db.getModel('ProductModel');
     // recupera en DB
     const products = await Product.findAll({});
-
     // guarda en cache
     storeObjectInCache(req, products);
 
     res
       .status(200)
-      .json(products);
+      .send(products);
   });
 
   return router;
