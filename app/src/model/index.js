@@ -44,6 +44,7 @@ async function connect(host, port, username, password, database) {
     await conn.sync();
     global.console.log(chalk.cyan('DB: Connect Success'));
   } catch (err) {
+    global.console.log(`server ${host}`);
     global.console.log(chalk.cyan('DB: Error connect', err));
   }
 }
