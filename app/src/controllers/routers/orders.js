@@ -4,6 +4,9 @@ const { Router } = require('express');
 const db = require('../../model');
 const { chkToken } = require('../midds/token');
 const { chkAdmin } = require('../midds/users');
+const { chkUpdateOrder } = require('../midds/orders');
+const chalk = require('chalk');
+
 
 function createRouter() {
   const router = Router();
@@ -51,7 +54,6 @@ function createRouter() {
 
       // crea registro pedido
       const order = await Order.create({
-        numero: 1,
         fecha,
         paymethDescripcion: medioPago,
         estado,
@@ -87,7 +89,12 @@ function createRouter() {
       await order.save();
 
       // devuelvo ok el endpoint
-      res.status(200).json(order);
+      res.status(200).json(
+        {
+          id: order.id,
+          message: 'Pedido creado'
+        });
+
     } catch (error) {
       global.console.log(error);
       res.status(406).json(error);
@@ -98,7 +105,7 @@ function createRouter() {
    * /orders:
    *  put:
    *    summary: Actualiza Pedido
-   *    description: Permite editar un pedido a un usuario.
+   *    description: Permite editar detalle de un pedido a un usuario.
    *    consumes:
    *    - "application/json"
    *    parameters:
@@ -112,12 +119,14 @@ function createRouter() {
    *      in: body
    *      required: true
    *      type: string
-   *      example: {numero: Number, codmediopago: String, detalle: {codproducto: String, cantidad: Number}}
+   *      example: {id: Number, detalle: {producto: String, cantidad: Number}}
    *    produces:
    *    - "application/json"
    *    responses:
    *      200:
    *        description: Pedido actualizado
+   *      403:
+   *        description: Detalle no válido, sólo puede editar o borrar
    *      404:
    *        description: Pedido no encontrado
    *      405:
@@ -125,33 +134,57 @@ function createRouter() {
    *      406:
    *        description: El Pedido debe estar Pendiente
    */
-  router.put('/', /* chk.validaSesion, chk.validaModificaPedido, chk.validaDetallePedido, */ async (req, res) => {
-    res.status(200).json({ mensaje: 'Pedido actualizado' });
-  });
-  /**
-   * @swagger
-   * /orders:
-   *  get:
-   *    summary: Lista pedidos del usuario
-   *    description: Obtener un listado de pedidos del usuario.
-   *    parameters:
-   *    - name: sesionid
-   *      description: Id de sesión devuelta por login
-   *      in: header
-   *      required: true
-   *      type: number
-   *    produces:
-   *    - "application/json"
-   *    responses:
-   *      200:
-   *        description: Peticion exitosa
-   *      404:
-   *        description: Usuario no encontrado
-   *
-   */
-  router.get('/', chkToken, async (req, res) => {
-    const listado = {};
-    res.status(200).json(listado);
+  router.put('/', chkToken, chkUpdateOrder, async (req, res) => {
+    // get modelo
+    const Product = db.getModel('ProductModel');
+    const Order = db.getModel('OrderModel');
+    const { id, detalle } = req.body;
+
+    try {
+      // array de productos
+      const order = await Order.findOne({
+        where: {
+          id,
+        },
+        include: [Product],
+      });
+
+      // lineas del pedido
+      order.products.forEach(element => {        
+
+        let encontro = false;
+        // lineas actualizadas
+        detalle.forEach(elementUpd => {
+          // mismo producto
+          if (element.descripcion === elementUpd.producto) {
+            encontro = true;
+            // difiere cantidad, update
+            if (element.orderproduct.cantidad !== elementUpd.cantidad) {
+              // update
+              order.removeProduct(element);
+              order.addProduct(element, { through: { cantidad: elementUpd.cantidad } });
+            }
+          }
+        });
+        if (!encontro) {
+          // elimina
+          order.removeProduct(element);
+        }
+      });
+      // guardo la order
+      await order.save();
+
+      // devuelvo ok el endpoint
+      res.status(200).json(
+        {
+          id: order.id,
+          message: 'Pedido Actualizado'
+        });
+        
+    } catch (error) {
+      global.console.log(error);
+      res.status(406).json(error);
+    }
   });
   /**
    * @swagger
@@ -171,11 +204,11 @@ function createRouter() {
    *      200:
    *        description: Peticion exitosa
    *      401:
-   *        description: Usuario no es Admin
+   *        description: Pedido no pertenece al Usuario
    *      403:
-   *        description: Invalid Token|
+   *        description: Invalid Token
    *      404:
-   *        description: Usuario no encontrado
+   *        description: Pedido no encontrado
    *
    */
   router.get('/all', chkToken, chkAdmin, async (req, res) => {
@@ -190,38 +223,6 @@ function createRouter() {
       .status(200)
       .json(orders);
   });
-  /**
-   * @swagger
-   * /orders/status:
-   *  put:
-   *    summary: Actualiza estado del pedido
-   *    description: Permite cambiar estado de un pedido (sólo usuario Admin).
-   *    consumes:
-   *    - "application/json"
-   *    parameters:
-   *    - name: sesionid
-   *      description: Id de sesión devuelta por login
-   *      in: header
-   *      required: true
-   *      type: number
-   *    - name: body
-   *      description: Estado nuevo [Pendiente, Confirmado, En preparación, Enviado, Entregado]
-   *      in: body
-   *      required: true
-   *      type: string
-   *      example: {numero: Number, estado: String}
-   *    produces:
-   *    - "application/json"
-   *    responses:
-   *      200:
-   *        description: Peticion actualizado
-   *      404:
-   *        description: Pedido no encontrado
-   */
-  router.put('/status', /* chk.validaSesion, chk.validaUsuarioAdmin, chk.validaModificaPedido, */ async (req, res) => {
-    res.status(200).json({ mensaje: 'Pedido actualizado' });
-  });
-
   return router;
 }
 

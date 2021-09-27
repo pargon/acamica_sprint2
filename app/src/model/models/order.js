@@ -2,10 +2,6 @@ const { DataTypes } = require('sequelize');
 
 function createModel(sequelize) {
   const Order = sequelize.define('order', {
-    numero: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
     fecha: {
       type: DataTypes.DATE,
       allowNull: true,

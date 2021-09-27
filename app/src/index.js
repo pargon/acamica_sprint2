@@ -1,4 +1,5 @@
 const chalk = require('chalk');
+const { initialize } = require('./config/initialize');
 const { config } = require('dotenv');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUI = require('swagger-ui-express');
@@ -47,6 +48,7 @@ async function main() {
 
   // database
   await connect(MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASS, MYSQL_DATABASE);
+  //initialize();
 
   // redis
   redisConn(REDIS_HOST, REDIS_PORT);

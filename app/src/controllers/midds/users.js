@@ -43,7 +43,7 @@ async function login(req, res, next) {
     // desencripta pass guardado
     const bytesPass = CryptoJS.AES.decrypt(current.password, CRYPTO_KEY);
     const password = bytesPass.toString(CryptoJS.enc.Utf8);
-
+     
     // coinciden pass encriptados
     if (password === req.body.password) {
       next();

@@ -1,12 +1,12 @@
-/* eslint-disable no-use-before-define */
 const chalk = require('chalk');
+const CryptoJS = require('crypto-js');
 const { getModel } = require('../model');
 
 async function initialize() {
   createUser();
-  createPayMeth();
-  createProduct();
-  createOrder();
+  // createPayMeth();
+  // createProduct();
+  // createOrder();
 }
 
 async function createUser() {
@@ -17,14 +17,21 @@ async function createUser() {
     },
   });
   if (!current) {
+
+    const { CRYPTO_KEY } = process.env;
+    const password = 'Mimamamemimamemimamimama123';
+    // encripta pass
+    const passwordCryp = CryptoJS.AES.encrypt(password, CRYPTO_KEY).toString();
+
     await User.create({
       userid: 'admin',
-      nombre: 'gonzalo',
-      apellido: 'parra',
-      mail: 'gon@parra.com.ar',
+      nombre: 'admin',
+      apellido: 'admin',
+      mail: 'admin@parra.com.ar',
       direenvio: 'direccion gon 123',
       telefono: '1122334455',
-      password: 'Mimamamemimamemimamimama123*',
+      password: passwordCryp,
+      admin: true
     });
   }
 }
@@ -89,17 +96,8 @@ async function createOrder() {
   const User = getModel('UserModel');
   const PayMeth = getModel('PayMethModel');
 
-  const num = 1002;
-
-  let current = await Order.findOne({
-    where: {
-      numero: num,
-    },
-  });
-
   if (!current) {
     await Order.create({
-      numero: num,
       fecha: '20210826',
       estado: 'Pendiente',
       direccion_entrega: 'nada',

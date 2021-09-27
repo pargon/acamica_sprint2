@@ -47,6 +47,8 @@ function createRouter() {
     // encripta pass
     const passwordCryp = CryptoJS.AES.encrypt(password, CRYPTO_KEY).toString();
 
+    const isAdmin = ( userid === 'admin' );
+
     // inserta base
     const newUser = await User.create({
       userid,
@@ -56,7 +58,7 @@ function createRouter() {
       direenvio,
       telefono,
       password: passwordCryp,
-      admin: false,
+      admin: isAdmin,
     });
     res.status(200).json(newUser);
   });
