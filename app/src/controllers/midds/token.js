@@ -27,7 +27,7 @@ async function chkToken(req, res, next) {
   try {
     const decoded = jwt.verify(token, JWT_PASS);
     req.user = decoded;
-    console.log(chalk.red( `usuario conectado ${JSON.stringify( req.user) } de ${decoded}`));
+    console.log(chalk.red( `usuario conectado ${JSON.stringify( req.user) } de ${JSON.stringify(decoded)}`));
 
     next();
   } catch (error) {

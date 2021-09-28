@@ -18,10 +18,6 @@ function createModel(sequelize) {
       type: DataTypes.STRING(60),
       allowNull: true,
     },
-    direenvio: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-    },
     telefono: {
       type: DataTypes.STRING(20),
       allowNull: true,

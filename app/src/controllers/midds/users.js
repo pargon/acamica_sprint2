@@ -1,3 +1,4 @@
+const chalk = require('chalk');
 const CryptoJS = require('crypto-js');
 const db = require('../../model');
 
@@ -43,7 +44,7 @@ async function login(req, res, next) {
     // desencripta pass guardado
     const bytesPass = CryptoJS.AES.decrypt(current.password, CRYPTO_KEY);
     const password = bytesPass.toString(CryptoJS.enc.Utf8);
-     
+
     // coinciden pass encriptados
     if (password === req.body.password) {
       next();
@@ -83,8 +84,54 @@ async function chkAdmin(req, res, next) {
   }
 }
 
+async function chkUserAddress(req, res, next) {
+  const { userid } = req.user;
+  const { direccionEntrega } = req.body;
+
+  const User = db.getModel('UserModel');
+  const Address = db.getModel('AddressModel');
+
+  try {
+    // array de direcciones
+    const user = await User.findOne({
+      where: {
+        userid,
+      },
+      include: [
+        Address
+      ],
+    });
+
+    // busca dirección query encontrada entre las del usuario
+    let encontro = false;
+    user.addresses.forEach(element => {
+      if (direccionEntrega === element.direccion) {
+        encontro = true;
+      }
+    });
+    if (!encontro && direccionEntrega) {
+      res
+        .status(403)
+        .json({
+          message: 'Dirección no encontrada'
+        });
+    } else {
+      next();
+    }
+  }
+  catch (error) {
+    global.console.log(chalk.red(error));
+    res
+      .status(403)
+      .json({
+        message: 'Dirección no encontrada'
+      });
+  }
+}
+
 module.exports = {
   chkNewUser,
   login,
   chkAdmin,
+  chkUserAddress,
 };

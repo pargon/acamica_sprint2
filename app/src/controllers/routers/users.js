@@ -29,38 +29,58 @@ function createRouter() {
  *      200:
  *        description: Usuario Creado.
  *        type: string
- *        example: { nombre: String, apellido: String, mail: String, direccionenvio: String, telefono: String, userid: String, password: String}
+ *        example: { nombre: String, apellido: String, mail: String, direccionenvio: String, telefono: String, userid: String, password: String, direcciones: {direccion: String}}
  */
   router.post('/', chkNewUser, async (req, res) => {
     const { CRYPTO_KEY } = process.env;
     const User = db.getModel('UserModel');
+    const Address = db.getModel('AddressModel');
     const {
       userid,
       nombre,
       apellido,
       mail,
-      direenvio,
       telefono,
       password,
+      direcciones,
     } = req.body;
-
+    const direcc = direcciones
     // encripta pass
     const passwordCryp = CryptoJS.AES.encrypt(password, CRYPTO_KEY).toString();
 
-    const isAdmin = ( userid === 'admin' );
+    const isAdmin = (userid === 'admin');
 
-    // inserta base
-    const newUser = await User.create({
-      userid,
-      nombre,
-      apellido,
-      mail,
-      direenvio,
-      telefono,
-      password: passwordCryp,
-      admin: isAdmin,
-    });
-    res.status(200).json(newUser);
+    try {
+      // inserta base
+      const newUser = await User.create({
+        userid,
+        nombre,
+        apellido,
+        mail,
+        telefono,
+        password: passwordCryp,
+        admin: isAdmin,
+        addresses: direcciones,
+      }, {
+        include: [Address],
+      });
+
+      // // agrega direcciones al usuario
+      // direcciones.forEach(element => {
+      //   const direccion = element.direccion;
+      //   newUser.addAddress(direccion);
+      // });
+
+      // guardo la order
+      await newUser.save();
+
+      // devuelvo ok el endpoint
+      res.status(200).json(newUser);
+
+    } catch (error) {
+      global.console.log(error);
+      res.status(406).json(error);
+    }
   });
   /**
    * @swagger
@@ -96,8 +116,9 @@ function createRouter() {
 
   router.get('/', chkToken, chkAdmin, async (req, res) => {
     const User = db.getModel('UserModel');
+    const Address = db.getModel('AddressModel');
     global.console.time('GET Users');
-    const users = await User.findAll({});
+    const users = await User.findAll({ include: [Address] });
     global.console.timeEnd('GET Users');
     res.json(users);
   });

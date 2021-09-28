@@ -3,7 +3,7 @@
 const { Router } = require('express');
 const db = require('../../model');
 const { chkToken } = require('../midds/token');
-const { chkAdmin } = require('../midds/users');
+const { chkAdmin, chkUserAddress } = require('../midds/users');
 const { chkUpdateOrder } = require('../midds/orders');
 const chalk = require('chalk');
 
@@ -36,8 +36,10 @@ function createRouter() {
    *    responses:
    *      200:
    *        description: Pedido creado
+   *      403:
+   *        description: Dirección no encontrada
    */
-  router.post('/', chkToken, async (req, res) => {
+  router.post('/', chkToken, chkUserAddress, async (req, res) => {
     // get modelo
     const Product = db.getModel('ProductModel');
     const Order = db.getModel('OrderModel');

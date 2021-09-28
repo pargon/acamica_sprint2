@@ -5,6 +5,7 @@ const { createModel: createProductModel } = require('./models/product');
 const { createModel: createUserModel } = require('./models/user');
 const { createModel: createPayMethModel } = require('./models/paymeth');
 const { createModel: createOrderModel } = require('./models/order');
+const { createModel: createAddressModel} = require('./models/address');
 const redis = require('redis');
 
 const models = {};
@@ -25,10 +26,12 @@ async function connect(host, port, username, password, database) {
   models.ProductModel = createProductModel(conn);
   models.PayMethModel = createPayMethModel(conn);
   models.OrderModel = createOrderModel(conn);
+  models.AddressModel = createAddressModel(conn);
 
   // relacion entre modelos
   models.OrderModel.belongsTo(models.UserModel, { targetKey: 'userid', foreignKey: 'userUserid' });
   models.OrderModel.belongsTo(models.PayMethModel, { targetKey: 'descripcion', foreignKey: 'paymethDescripcion' });
+  models.UserModel.hasMany(models.AddressModel, { targetKey: 'descripcion', foreignKey: 'userAddresses' });
 
   const OrderProduct = conn.define('orderproduct', {
     cantidad: DataTypes.INTEGER,
@@ -41,7 +44,7 @@ async function connect(host, port, username, password, database) {
 
   try {
     await conn.authenticate();
-    await conn.sync();
+    //await conn.sync();
     global.console.log(chalk.cyan('DB: Connect Success'));
   } catch (err) {
     global.console.log(`server ${host}`);

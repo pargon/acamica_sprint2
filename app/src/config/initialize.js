@@ -3,7 +3,7 @@ const CryptoJS = require('crypto-js');
 const { getModel } = require('../model');
 
 async function initialize() {
-  createUser();
+  //createUser();
   // createPayMeth();
   // createProduct();
   // createOrder();
