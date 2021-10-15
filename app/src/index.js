@@ -37,6 +37,13 @@ async function main() {
         version: '2.0.0',
         description: 'by Gonzalo Parra',
       },
+      securityDefinitions: {
+        Bearer: {
+          type: 'apiKey',
+          name: 'Authorization',
+          in: 'header',
+        },
+      }
     },
     apis: [controllersFolder],
   };

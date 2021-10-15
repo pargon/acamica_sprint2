@@ -19,6 +19,7 @@ async function newToken(req, res, next) {
 }
 
 async function chkToken(req, res, next) {
+  console.log('token');
   const { JWT_PASS } = process.env;
   const bearer = req.headers.authorization;
   const token = (bearer !== undefined ? bearer : '')

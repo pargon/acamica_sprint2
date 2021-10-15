@@ -2,25 +2,20 @@
 const { Router } = require('express');
 const db = require('../../model');
 const { chkToken } = require('../midds/token');
-const { chkAdmin } = require('../midds/users');
+const { chkAdmin, chkUserActive } = require('../midds/users');
 
 function createRouter() {
   const router = Router();
 
   /**
    * @swagger
-   * /paymeths:
+   * /api/v1/paymeths:
    *  post:
    *    summary: Crear medio de pago
    *    description: Permite crear un medio de pago (sólo usuario Admin).
    *    consumes:
    *    - "application/json"
    *    parameters:
-   *    - name: sesionid
-   *      description: Id de sesión devuelta por login
-   *      in: header
-   *      required: true
-   *      type: number
    *    - name: body
    *      description: Cuerpo de un medio de pago.
    *      in: body
@@ -35,7 +30,7 @@ function createRouter() {
    *      409:
    *        description: Ya existe el Medio de Pago
    */
-  router.post('/', chkToken, chkAdmin, async (req, res) => {
+  router.post('/', chkToken, chkAdmin, chkUserActive, async (req, res) => {
     // get modelo
     const PayMeth = db.getModel('PayMethModel');
     const {
@@ -74,18 +69,13 @@ function createRouter() {
   });
   /**
    * @swagger
-   * /paymeths:
+   * /api/v1/paymeths:
    *  put:
    *    summary: Actualiza pedido
    *    description: Permite editar un medio de pago (sólo usuario Admin).
    *    consumes:
    *    - "application/json"
    *    parameters:
-   *    - name: sesionid
-   *      description: Id de sesión devuelta por login
-   *      in: header
-   *      required: true
-   *      type: number
    *    - name: body
    *      description: Cuerpo de un medio de pago.
    *      in: body
@@ -102,7 +92,7 @@ function createRouter() {
    *      409:
    *        description: Ya existe el Medio de Pago con esa Descripción
    */
-  router.put('/', chkToken, chkAdmin, async (req, res) => {
+  router.put('/', chkToken, chkAdmin, chkUserActive, async (req, res) => {
     // get modelo
     const PayMeth = db.getModel('PayMethModel');
     const {
@@ -155,18 +145,13 @@ function createRouter() {
   });
   /**
    * @swagger
-   * /paymeths:
+   * /api/v1/paymeths:
    *  delete:
    *    summary: Elimina medio de pago
    *    description: Permite eliminar un medio de pago (sólo usuario Admin).
    *    consumes:
    *    - "application/json"
    *    parameters:
-   *    - name: sesionid
-   *      description: Id de sesión devuelta por login
-   *      in: header
-   *      required: true
-   *      type: number
    *    - name: body
    *      description: Cuerpo de un medio de pago.
    *      in: body
@@ -181,7 +166,7 @@ function createRouter() {
    *      404:
    *        description: Medio de Pago no encontrado
    */
-  router.delete('/', chkToken, chkAdmin, async (req, res) => {
+  router.delete('/', chkToken, chkAdmin, chkUserActive, async (req, res) => {
     // get modelo
     const PayMeth = db.getModel('PayMethModel');
     const {
@@ -217,16 +202,10 @@ function createRouter() {
   });
   /**
    * @swagger
-   * /paymeths:
+   * /api/v1/paymeths:
    *  get:
    *    summary: Lista medios de pago
    *    description: Obtener un listado con todos los medios de pago (sólo usuario Admin puede invocar).
-   *    parameters:
-   *    - name: sesionid
-   *      description: Id de sesión devuelta por login
-   *      in: header
-   *      required: true
-   *      type: number
    *    produces:
    *    - "application/json"
    *    responses:
@@ -234,7 +213,7 @@ function createRouter() {
    *        description: Peticion exitosa
    *
    */
-  router.get('/', chkToken, chkAdmin, async (req, res) => {
+  router.get('/', chkToken, chkAdmin, chkUserActive, async (req, res) => {
     const PayMeth = db.getModel('PayMethModel');
     const paymeths = await PayMeth.findAll({});
     res

@@ -1,9 +1,7 @@
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable max-len */
 const { Router } = require('express');
 const db = require('../../model');
 const { chkToken } = require('../midds/token');
-const { chkAdmin, chkUserAddress } = require('../midds/users');
+const { chkAdmin, chkUserActive, chkUserAddress } = require('../midds/users');
 const { chkUpdateOrder } = require('../midds/orders');
 const chalk = require('chalk');
 
@@ -13,18 +11,13 @@ function createRouter() {
 
   /**
    * @swagger
-   * /orders:
+   * /api/v1/orders:
    *  post:
    *    summary: Nuevo Pedido
    *    description: Permite crear un pedido a un usuario.
    *    consumes:
    *    - "application/json"
    *    parameters:
-   *    - name: sesionid
-   *      description: Id de sesión devuelta por login
-   *      in: header
-   *      required: true
-   *      type: number
    *    - name: body
    *      description: Cuerpo de un pedido.
    *      in: body
@@ -39,7 +32,7 @@ function createRouter() {
    *      403:
    *        description: Dirección no encontrada
    */
-  router.post('/', chkToken, chkUserAddress, async (req, res) => {
+  router.post('/', chkToken, chkUserActive, chkUserAddress, async (req, res) => {
     // get modelo
     const Product = db.getModel('ProductModel');
     const Order = db.getModel('OrderModel');
@@ -104,18 +97,13 @@ function createRouter() {
   });
   /**
    * @swagger
-   * /orders:
+   * /api/v1/orders:
    *  put:
    *    summary: Actualiza Pedido
    *    description: Permite editar detalle de un pedido a un usuario.
    *    consumes:
    *    - "application/json"
    *    parameters:
-   *    - name: sesionid
-   *      description: Id de sesión devuelta por login
-   *      in: header
-   *      required: true
-   *      type: number
    *    - name: body
    *      description: Cuerpo de un pedido.
    *      in: body
@@ -136,7 +124,7 @@ function createRouter() {
    *      406:
    *        description: El Pedido debe estar Pendiente
    */
-  router.put('/', chkToken, chkUpdateOrder, async (req, res) => {
+  router.put('/', chkToken, chkUserActive, chkUpdateOrder, async (req, res) => {
     // get modelo
     const Product = db.getModel('ProductModel');
     const Order = db.getModel('OrderModel');
@@ -152,7 +140,7 @@ function createRouter() {
       });
 
       // lineas del pedido
-      order.products.forEach(element => {        
+      order.products.forEach(element => {
 
         let encontro = false;
         // lineas actualizadas
@@ -182,7 +170,7 @@ function createRouter() {
           id: order.id,
           message: 'Pedido Actualizado'
         });
-        
+
     } catch (error) {
       global.console.log(error);
       res.status(406).json(error);
@@ -190,16 +178,12 @@ function createRouter() {
   });
   /**
    * @swagger
-   * /orders/all:
+   * /api/v1/orders/all:
    *  get:
    *    summary: Todos los pedidos
    *    description: Obtener un listado con todos los pedidos (sólo usuario Admin puede invocar).
-   *    parameters:
-   *    - name: sesionid
-   *      description: Id de sesión devuelta por login
-   *      in: header
-   *      required: true
-   *      type: number
+   *    security:
+   *    - Bearer: []
    *    produces:
    *    - "application/json"
    *    responses:
@@ -213,7 +197,7 @@ function createRouter() {
    *        description: Pedido no encontrado
    *
    */
-  router.get('/all', chkToken, chkAdmin, async (req, res) => {
+  router.get('/all', chkToken, chkAdmin, chkUserActive, async (req, res) => {
     const Order = db.getModel('OrderModel');
     const User = db.getModel('UserModel');
     const Product = db.getModel('ProductModel');

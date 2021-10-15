@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const db = require('../../model');
 const { chkToken } = require('../midds/token');
-const { chkAdmin } = require('../midds/users');
+const { chkAdmin, chkUserActive } = require('../midds/users');
 const { cache, storeObjectInCache, invalidateCache } = require('../midds/cache');
 
 function createRouter() {
@@ -9,18 +9,13 @@ function createRouter() {
 
   /**
    * @swagger
-   * /products:
+   * /api/v1/products:
    *  post:
    *    summary: Crear producto
    *    description: Permite crear un producto (sólo usuario Admin).
    *    consumes:
    *    - "application/json"
    *    parameters:
-   *    - name: sesionid
-   *      description: Id de sesión devuelta por login
-   *      in: header
-   *      required: true
-   *      type: number
    *    - name: body
    *      description: Cuerpo de un producto.
    *      in: body
@@ -35,7 +30,7 @@ function createRouter() {
    *      409:
    *        description: Ya existe el producto
    */
-  router.post('/', chkToken, chkAdmin, async (req, res) => {
+  router.post('/', chkToken, chkAdmin, chkUserActive, async (req, res) => {
     // get modelo
     const Product = db.getModel('ProductModel');
     const {
@@ -82,18 +77,13 @@ function createRouter() {
   });
   /**
    * @swagger
-   * /products:
+   * /api/v1/products:
    *  put:
    *    summary: Actualizar producto
    *    description: Permite editar un producto (sólo usuario Admin).
    *    consumes:
    *    - "application/json"
    *    parameters:
-   *    - name: sesionid
-   *      description: Id de sesión devuelta por login
-   *      in: header
-   *      required: true
-   *      type: number
    *    - name: body
    *      description: Cuerpo de un producto.
    *      in: body
@@ -110,7 +100,7 @@ function createRouter() {
    *      409:
    *        description: Producto ya existente con esa Descripción
    */
-  router.put('/', chkToken, chkAdmin, async (req, res) => {
+  router.put('/', chkToken, chkAdmin, chkUserActive, async (req, res) => {
     // get modelo
     const Product = db.getModel('ProductModel');
     const {
@@ -171,18 +161,13 @@ function createRouter() {
   });
   /**
    * @swagger
-   * /products:
+   * /api/v1/products:
    *  delete:
    *    summary: Elimina producto
    *    description: Permite eliminar un producto (sólo usuario Admin).
    *    consumes:
    *    - "application/json"
    *    parameters:
-   *    - name: sesionid
-   *      description: Id de sesión devuelta por login
-   *      in: header
-   *      required: true
-   *      type: number
    *    - name: body
    *      description: Cuerpo de un producto.
    *      in: body
@@ -197,7 +182,7 @@ function createRouter() {
    *      404:
    *        description: Producto no encontrado
    */
-  router.delete('/', chkToken, chkAdmin, async (req, res) => {
+  router.delete('/', chkToken, chkAdmin, chkUserActive, async (req, res) => {
     // get modelo
     const Product = db.getModel('ProductModel');
     const {
@@ -238,16 +223,10 @@ function createRouter() {
   });
   /**
    * @swagger
-   * /products:
+   * /api/v1/products:
    *  get:
    *    summary: Lista todos los productos
    *    description: Obtener un listado de todos los productos (sólo usuario Admin puede invocar).
-   *    parameters:
-   *    - name: sesionid
-   *      description: Id de sesión devuelta por login
-   *      in: header
-   *      required: true
-   *      type: number
    *    produces:
    *    - "application/json"
    *    responses:
@@ -255,7 +234,7 @@ function createRouter() {
    *        description: Peticion exitosa
    *
    */
-  router.get('/', chkToken, chkAdmin, cache, async (req, res) => {
+  router.get('/', chkToken, chkAdmin, chkUserActive, cache, async (req, res) => {
     // modelo de datos
     const Product = db.getModel('ProductModel');
     // recupera en DB
