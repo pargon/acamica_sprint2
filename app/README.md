@@ -16,8 +16,9 @@ Este proyecto consiste en presentar una api que permite gestionar ordenes a los 
 - Instalar paquetes en Node (sección Instalación de paquetes)
 - Cambiar variables de entorno (sección Variables de Entorno)
 - Para probar el test (sección Correr Tests)
-- Para probar la api (sección Correr Api)
-- Acceder a la documentación [Api-Docs](http://localhost:5050/api-docs/#/)
+- Para iniciar la api (sección Correr Api)
+- Para probar la api acceder a la documentación en Api-Docs](http://localhost:5050/api-docs/#/)
+
 ## Instalación de paquetes
 
 Ejecutar siguiente comando para iniciar
